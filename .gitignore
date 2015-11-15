@@ -1,0 +1,7 @@
+.DS_Store
+node_modules
+comics
+*.log
+*.zip
+*.elcx
+.idea

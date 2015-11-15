@@ -1,0 +1,27 @@
+{
+  "name": "electricomics-web-reader",
+  "version": "1.0.0",
+  "description": "Electricomics Web Reader",
+  "scripts": {
+    "start": "nw"
+  },
+  "author": "Ocasta Studios",
+  "devDependencies": {
+    "nw": "^0.12.3"
+  },
+  "engines": {
+    "nw.js": "0.12.3"
+  },
+  "dependencies": {
+    "express": "^4.12.0"
+  },
+  "main": "index.html",
+  "window": {
+    "width": 1024,
+    "height": 600,
+    "fullscreen": false,
+    "title": "Electricomics Web Reader",
+    "toolbar": false
+  },
+  "private": true
+}

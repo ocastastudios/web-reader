@@ -39,6 +39,9 @@ var app = express();
 var http = require('http');
 var path = require('path');
 var fs = require('fs');
+var exphbs = require('express-handlebars');
+var Download = require('download');
+var dataJson = require('./data.json');
 
 // settings
 var options = {
@@ -81,82 +84,18 @@ try {
 // the port will be in an advanded setting panel to avoid collision with existent servers
 var serverUrl = 'http://' + options.host + ':' + options.port;
 
-// what do we save in local memory for each project?
+// what do we save in local memory for each comic?
 // id is a unique for the session identifier, formed of:
-// a counter, increased for every open project in the session
-// name of the open project without the extension.
+// a counter, increased for every open comic in the session
+// plus the name of the open comic.
 // with session we mean the time during which the app is open.
 // when the app is closed and reopen the session restart, so does the counter
-// project[id] = { fsPath, serverPath, name, files: { nameOfFile: { saved: bool } } }
+// comic[id] = { fsPath, serverPath, name }
 var projects = {};
 var projectsCounter = 0;
-var projectExt = '.elcxproject';
+var projectExt = '.elcx';
 var projectExtReg = new RegExp(projectExt + '$', 'i');
-var iframesOpen = 0;
-var currentProject;
-
-
-/*
- * Disable/enable top menu items depending if any project is open or not
- * Items like "save project" or "close project" should not be available if no project is open
- */
-var iframeFrill = function() {
-  if (iframesOpen <= 0) {
-    $menuItemProject.addClass('menu-item-disabled');
-  }
-  else {
-    $menuItemProject.removeClass('menu-item-disabled');
-  }
-};
-
-/**
- * Add an iframe with the open project url and its relative tab
- * @param {string} id - Project id
- */
-var iframeAdd = function(id) {
-  var $newIframe = $('<iframe class="iframe" src="' + serverUrl + '/loading.html?id=' + id + '&path=' + projects[id].serverPath + '" frameborder="0" id="iframe-' + id + '"></iframe>');
-  var $newTab = $('<span class="tab" id="tab-' + id + '" data-iframe="' + id + '">' + projects[id].name + '</span>');
-  $iframes.append($newIframe);
-  $tabs.append($newTab);
-  iframes[id] = $newIframe;
-  tabs[id] = $newTab;
-  iframeSelect(id);
-  iframesOpen++;
-  iframeFrill();
-};
-
-/**
- * Remove iframe and tab of selected project and focus the one on its left or its right
- * @param {string} id - Project id
- */
-var iframeClose = function(id) {
-  var prevIframe = tabs[id].prev();
-  var nextIframe = tabs[id].next();
-  if (prevIframe.length > 0) {
-    iframeSelect(prevIframe.data('iframe'));
-  }
-  else if (nextIframe.length > 0) {
-    iframeSelect(nextIframe.data('iframe'));
-  }
-  iframes[id].remove();
-  tabs[id].remove();
-  delete iframes[id];
-  delete tabs[id];
-  iframesOpen--;
-  iframeFrill();
-};
-
-/**
- * Focus selected open project
- * @param {string} id - Project id
- */
-var iframeSelect = function(id) {
-  currentProject = id;
-  $('.iframe-selected').removeClass('iframe-selected');
-  iframes[currentProject].addClass('iframe-selected');
-  $('.tab-selected').removeClass('tab-selected');
-  tabs[currentProject].addClass('tab-selected');
-};
+var comics = {};
 
 
 /**
@@ -169,14 +108,23 @@ var serverStart = function() {
   }).on('error', function() {
     //server is not yet running
 
+    // handlebars
+    app.set('views', path.join(process.cwd(), 'views'));
+    app.engine('.hbs', exphbs({extname: '.hbs'}));
+    app.set('view engine', '.hbs');
+
+    app.use(express.static(path.join(process.cwd(), 'public')));
+    
+    app.use('/', function(req, res) {
+      res.render('index', { comics : comicData });
+    });
+
     // all environments
     app.set('port', options.port);
-    app.use(express.static(path.join(process.cwd(), 'public')));
 
     server = http.createServer(app);
     server.listen(options.port, function() {
-      console.log('server created');
-      projectOpenAll();
+      $mainFrame.attr('src', serverUrl + '/splashscreen.html');
     });
 
     server.on('connection', function (socket) {
@@ -194,152 +142,171 @@ var serverStart = function() {
   });
 };
 
-/**
- * Stop the local server
- */
-// not sure I need this
-// var serverStop = function() {
-//   if (server) {
-//     server.close(function() {
-//       console.log('closed');
-//     });
-//     for (var socketId in sockets) {
-//       if (sockets.hasOwnProperty(socketId)) {
-//         // console.log('socket', socketId, 'destroyed');
-//         sockets[socketId].destroy();
-//       }
-//     }
-//   }
-// };
-
 
 /**
- * Open project
- * @param {string} path - Path in the filesystem of the project
- * @param {string} name - Name in the filesystem of the project/file - It can be with or without extension, we take care of this later
+ * Load all internal comics
  */
-var projectOpen = function(path, name) {
-  if (!path) {
-    return false;
-  }
-
-  // if folder doesn't have our extension we throw a message notifing the error and asking
-  // if the user want to select another folder
-  if (!projectExtReg.test(path)) {
-    var confirm = $('#dialog-project-open').dialog({
-      resizable: false,
-      modal: true,
-      width: 550,
-      buttons: {
-        'Yes': function() {
-          $(this).dialog('close');
-          $openProject.val('');
-          $openProject.trigger('click');
-        },
-        'No': function() {
-          $(this).dialog('close');
-        }
+var loadIntComics = function() {
+  var dataComics = dataJson.comics;
+  var localComics = JSON.parse(localStorage.getItem('comics') || {});
+  var slug;
+  var str;
+  var obj;
+  var fsPath;
+  for (var i = 0; i < dataComics.length; i++) {
+    slug = dataComics[i].slug;
+    fsPath = path.join(process.cwd(), 'comics', slug);
+    // if we already have that comic and that version, load localstorage data
+    if (localComics.hasOwnProperty(slug) &&
+      dataComics[i].version === localComics[slug].version) {
+      comics[slug] = localComics[slug];
+      app.use('/' + slug, express.static(fsPath));
+    }
+    // otherwise load from its own comic.json
+    else {
+      str = fs.readFileSync(path.join(fsPath, 'comic.json'));
+      try {
+        obj = JSON.parse(str);
+        comics[slug] = obj;
+        app.use('/' + slug, express.static(fsPath));
       }
-    });
-    confirm.html('<p>Project <em>' + path + '</em> not valid, do you want to open another project?</p>');
-    confirm.dialog('open');
-    return false;
+      catch (e) {
+        // do nothing
+      }
+    }
+  }
+  localStorage.setItem('comics', JSON.stringify(comics));
+};
+
+
+/**
+ * Load all external comics
+ */
+var loadExtComics = function() {
+  var localComics;
+  try {
+    localComics = JSON.parse(localStorage.getItem('library'));
+  }
+  catch (e) {
+    localComics = {};
+  }
+  for (var p in localComics) {
+    if (localComics.hasOwnProperty(p)) {
+      addIntComic(localComics[p].fsPath, localComics[p].name);
+
+      fs.stat(localComics[p].fsPath, function(err) {
+        if (err == null) {
+          // folder exists
+          return ok(localComics[p]);
+        }
+        else if (err.code === 'ENOENT') {
+          // folder does not exist
+          return ko();
+        }
+        else {
+          // some other error that we threat as if folder exists
+          return ok(localComics[p]);
+        }
+      });
+    }
   }
 
-  // check if folder physically exists
-  fs.stat(path, function(err) {
+  var ko = function() {
+    localStorage.setItem('library', JSON.stringify(projects));
+  };
+
+  var ok = function(obj) {
+    addComic(obj.fsPath, obj.name, obj.data);
+  };
+};
+
+
+/**
+ * Add comic from url
+ * @param {string} url - Where to download the comic from
+ * @param {string} fsPath - Path in the filesystem where to download the comic
+ */
+var addUrlComic = function(url, fsPath) {
+  new Download({extract: true})
+    .get(url, fsPath)
+    .run( function(err, files) {
+      if (err) {
+        return false;
+      }
+      var name = '';
+      addIntComic(fsPath, name);
+      return true;
+    });
+};
+
+
+/**
+ * Add comic from folder
+ * @param {string} fsPath - Path in the filesystem of the comic
+ */
+var addIntComic = function(fsPath, name) {
+  var jPath = path.join(fsPath, 'comic.json');
+
+  fs.stat(jPath, function(err) {
     if (err == null) {
-      // folder exists
+      // file exists
       return ok();
     }
     else if (err.code === 'ENOENT') {
-      // folder does not exist
+      // file does not exist
       return ko();
     }
     else {
-      // some other error that we threat as if folder exists
+      // some other error that we threat as if file exists
       return ok();
     }
   });
 
-  // folder doesn't exist, just do nothing and save current valid open projects in memory
   var ko = function() {
-    localStorage.setItem('projects', JSON.stringify(projects));
-  };
-
-  // folder exists
-  var ok = function() {
-    for (var p in projects) {
-      if (projects.hasOwnProperty(p)) {
-        // check if this filesystem path aka the project has been already opened
-        if (projects[p].fsPath === path) {
-          return false;
-        }
-      }
-    }
-    // create session data of this project
-    projectsCounter++;
-    var nameNoExt = name.replace(projectExtReg, '');
-    var id = projectsCounter + '-' + nameNoExt;
-    projects[id] = {
-      name: nameNoExt,
-      fsPath: path,
-      serverPath: '/' + id
-    };
-    // mount folder
-    app.use('/' + id, express.static(path));
-    // save that we opened this project
-    localStorage.setItem('projects', JSON.stringify(projects));
-    // load iframe
-    iframeAdd(id);
-  };
-};
-
-/**
- * Open all projects that were open when app was closed last time
- */
-var projectOpenAll = function() {
-  var proj;
-  try {
-    // try to load the projects that were opened in the last session
-    proj = JSON.parse(localStorage.getItem('projects'));
-  }
-  catch (e) {
     return false;
-  }
-  for (var p in proj) {
-    if (proj.hasOwnProperty(p)) {
-      projectOpen(proj[p].fsPath, proj[p].name);
+  };
+
+  var ok = function() {
+    var str = fs.readFileSync(jPath);
+    var obj;
+    try {
+      obj = JSON.parse(str);
+      addComic(fsPath, name, obj);
     }
-  }
+    catch (e) {
+      return false;
+    }
+  };
 };
 
+
 /**
- * Send a message to the iframe of the selected project
+ * Add comic
+ * @param {string} fsPath - Path in the filesystem of the comic
+ * @param {string} name - Slug of the comic
+ * @param {object} obj - Data from comic.json
+ */
+var addComic = function(fsPath, name, obj) {
+  projectsCounter++;
+  var id = projectsCounter + '-' + name;
+  projects[id] = {
+    name: name,
+    fsPath: fsPath,
+    serverPath: '/' + id,
+    data: obj
+  };
+  app.use('/' + id, express.static(fsPath));
+  localStorage.setItem('library', JSON.stringify(projects));
+};
+
+
+/**
+ * Send a message to the iframe
  * Communications between the app container (which runs under file://) and the pages in the local server (which runs under http://) can ben done only through window.postMessage (a method that enables cross-origin communication)
  * @param {string} type - Type of the message
- * @param {string} id - Project id
  */
-var projectStartMessage = function(type, id) {
-  var projectId = id || currentProject;
-  iframes[projectId].get(0).contentWindow.postMessage('{"type": "'+ type + '", "iframe": "' + projectId + '"}', serverUrl);
-};
-
-/**
- * Close project
- * @param {object} content - Object containing file names and the content to write into
- * @param {string} id - Project id
- */
-var projectClose = function(content, id) {
-  var projectId = id || currentProject;
-  // close function
-  var cb = function() {
-    iframeClose(projectId);
-    delete projects[projectId];
-    localStorage.setItem('projects', JSON.stringify(projects));
-    // todo unmount folder
-  };
-  cb();  
+var sendMessage = function(type) {
+  $mainFrame.get(0).contentWindow.postMessage('{"type": "'+ type + '"}', serverUrl);
 };
 
 
@@ -358,8 +325,7 @@ window.addEventListener('message', function(e) {
     return false;
   }
 
-  if (msg.type === 'close') {
-    projectClose(msg.content, msg.iframe);
+  if (msg.type === '') {
   }
 }, false);
 
@@ -367,15 +333,8 @@ window.addEventListener('message', function(e) {
 
 // UI
 var $openProject = $('#open-project');
-var $closeProject = $('#close-project');
-var $comicPreview = $('#comic-preview');
-var $comicFolder = $('#comic-folder');
 var $quit = $('#quit');
-var $iframes = $('#iframes');
-var iframes = {};
-var $tabs = $('#tabs');
-var tabs = {};
-var $menuItemProject = $('.menu-item-project');
+var $mainFrame = $('#main-iframe');
 
 
 $quit.on('click', function() {
@@ -401,7 +360,6 @@ $quit.on('click', function() {
 // top menu (e.g. keyboard shortcut close)
 win.on('close', function() {
   this.hide(); // Pretend to be closed already
-  // todo save all projects
   this.close(true);
 });
 
@@ -410,40 +368,13 @@ $openProject.on('change', function() {
   var name = this.files[0].name;
   console.log(path, name);
   if (path !== '') {
-    projectOpen(path, name);
+    addIntComic(path, name);
     // reset its value so it can catch the next event in case we select the same
     // previous value
     this.value = '';
   }
 });
 
-$closeProject.on('click', function() {
-  if ($(this).hasClass('menu-item-disabled')) {
-    return;
-  }
-  projectStartMessage('close');
-});
-
-$comicPreview.on('click', function() {
-  if ($(this).hasClass('menu-item-disabled')) {
-    return;
-  }
-  // open comic preview in the system default browser
-  nwgui.Shell.openExternal(path.join(serverUrl, projects[currentProject].serverPath));
-});
-
-$comicFolder.on('click', function() {
-  if ($(this).hasClass('menu-item-disabled')) {
-    return;
-  }
-  // open the project folder in the system finder
-  nwgui.Shell.showItemInFolder(projects[currentProject].fsPath);
-});
-
-$(document).on('click', '.tab', function() {
-  var id = $(this).data('iframe');
-  iframeSelect(id);
-});
 
 
 

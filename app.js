@@ -116,7 +116,11 @@ var serverStart = function() {
 
     app.use(express.static(path.join(process.cwd(), 'public')));
     app.use('/home', function(req, res) {
-      res.render('index', { comics : comics, library: projects });
+      var internal = false;
+      if (req.headers['user-agent'] === 'elcx-web-reader') {
+        internal = true;
+      }
+      res.render('index', { comics : comics, library: projects, internal: internal });
     });
 
     // all environments

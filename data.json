@@ -1,0 +1,8 @@
+{
+  "comics": [
+    { "slug": "big-nemo", "version": 1 },
+    { "slug": "red-horse", "version": 1 },
+    { "slug": "second-sight", "version": 1 },
+    { "slug": "sway", "version": 1 }
+  ]
+}

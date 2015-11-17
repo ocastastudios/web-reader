@@ -13,7 +13,9 @@
     "nw.js": "0.12.3"
   },
   "dependencies": {
-    "express": "^4.12.0"
+    "download": "^4.4.1",
+    "express": "^4.12.0",
+    "express-handlebars": "^2.0.1"
   },
   "main": "index.html",
   "window": {

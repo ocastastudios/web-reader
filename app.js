@@ -114,9 +114,8 @@ var serverStart = function() {
     app.set('view engine', '.hbs');
 
     app.use(express.static(path.join(process.cwd(), 'public')));
-    
-    app.use('/', function(req, res) {
-      res.render('index', { comics : comicData });
+    app.use('/home', function(req, res) {
+      res.render('index', { comics : comics, library: projects });
     });
 
     // all environments
@@ -125,6 +124,11 @@ var serverStart = function() {
     server = http.createServer(app);
     server.listen(options.port, function() {
       $mainFrame.attr('src', serverUrl + '/splashscreen.html');
+      loadIntComics();
+      loadExtComics();
+      $mainFrame.load(function() {
+        sendMessage('start');
+      });
     });
 
     server.on('connection', function (socket) {

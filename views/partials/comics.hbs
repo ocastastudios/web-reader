@@ -1,0 +1,21 @@
+{{#each comics}}
+<h3>{{title}}</h3>
+<p>{{summary}}</p>
+
+<div>version: {{version}}</div>
+<div>published: {{publish_date}}</div>
+<div>orientation: {{config.orientation}}</div>
+
+{{#if creators}}
+<h4>Creators</h4>
+<dl>
+  {{#each creators}}
+  <dt>{{./name}}</dt>
+    <dd>{{./role}}</dd>
+  {{/each}}
+</dl>
+{{/if}}
+
+<a href="/{{slug}}/">View comic</a>
+
+{{/each}}

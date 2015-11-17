@@ -105,6 +105,7 @@ var serverStart = function() {
   //check if server is already running
   http.get(options, function() {
     console.log('server is already running');
+    $mainFrame.attr('src', serverUrl + '/home');
   }).on('error', function() {
     //server is not yet running
 

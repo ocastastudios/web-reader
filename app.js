@@ -84,13 +84,13 @@ try {
 // the port will be in an advanded setting panel to avoid collision with existent servers
 var serverUrl = 'http://' + options.host + ':' + options.port;
 
-// what do we save in local memory for each comic?
+// what do we save in local memory for each project?
 // id is a unique for the session identifier, formed of:
-// a counter, increased for every open comic in the session
-// plus the name of the open comic.
+// a counter, increased for every open project in the session
+// plus the name of the open project.
 // with session we mean the time during which the app is open.
 // when the app is closed and reopen the session restart, so does the counter
-// comic[id] = { fsPath, serverPath, name }
+// projects[id] = { fsPath, serverPath, name, data }
 var projects = {};
 var projectsCounter = 0;
 var projectExt = '.elcx';
@@ -152,27 +152,34 @@ var serverStart = function() {
  */
 var loadIntComics = function() {
   var dataComics = dataJson.comics;
-  var localComics = JSON.parse(localStorage.getItem('comics') || {});
-  var slug;
+  var localComics = JSON.parse(localStorage.getItem('comics') || '{}');
+  var id;
   var str;
   var obj;
   var fsPath;
+  var serverPath;
   for (var i = 0; i < dataComics.length; i++) {
-    slug = dataComics[i].slug;
-    fsPath = path.join(process.cwd(), 'comics', slug);
+    id = dataComics[i].slug;
+    fsPath = path.join(process.cwd(), 'comics', id);
+    serverPath = '/' + id;
     // if we already have that comic and that version, load localstorage data
-    if (localComics.hasOwnProperty(slug) &&
-      dataComics[i].version === localComics[slug].version) {
-      comics[slug] = localComics[slug];
-      app.use('/' + slug, express.static(fsPath));
+    if (localComics.hasOwnProperty(id) &&
+      dataComics[i].version === localComics[id].data.version) {
+      comics[id] = localComics[id];
+      app.use(serverPath, express.static(fsPath));
     }
     // otherwise load from its own comic.json
     else {
       str = fs.readFileSync(path.join(fsPath, 'comic.json'));
       try {
         obj = JSON.parse(str);
-        comics[slug] = obj;
-        app.use('/' + slug, express.static(fsPath));
+        comics[id] = {
+          fsPath: fsPath,
+          serverPath: serverPath,
+          name: id,
+          data: obj
+        };
+        app.use(serverPath, express.static(fsPath));
       }
       catch (e) {
         // do nothing

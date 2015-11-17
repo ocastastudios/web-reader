@@ -1,6 +1,9 @@
 {{#each comics}}
+{{#with data}}
 <h3>{{title}}</h3>
 <p>{{summary}}</p>
+
+<img src="/{{slug}}/cover.png" alt="{{title}} cover">
 
 <div>version: {{version}}</div>
 <div>published: {{publish_date}}</div>
@@ -10,12 +13,12 @@
 <h4>Creators</h4>
 <dl>
   {{#each creators}}
-  <dt>{{./name}}</dt>
-    <dd>{{./role}}</dd>
+  <dt>{{name}}</dt>
+    <dd>{{role}}</dd>
   {{/each}}
 </dl>
 {{/if}}
 
 <a href="/{{slug}}/">View comic</a>
-
+{{/with}}
 {{/each}}

@@ -9,6 +9,17 @@
 </head>
 <body>
 
+<script src="js/lib/jquery.min.js"></script>
+<script>
+var sendMessage = function(type, obj) {
+  var msg = {
+    type: type
+  };
+  $.extend(msg, obj);
+  window.parent.postMessage(JSON.stringify(msg), '*');
+};
+</script>
+
 <header>
   <h1>Electricomics</h1>
 </header>

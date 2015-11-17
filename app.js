@@ -341,14 +341,18 @@ window.addEventListener('message', function(e) {
     return false;
   }
 
-  if (msg.type === '') {
+  if (msg.type === 'local') {
+    addIntComic(msg.path, msg.name);
+  }
+
+  if (msg.type === 'url') {
+    addUrlComic(msg.url, msg.path);
   }
 }, false);
 
 
 
 // UI
-var $openProject = $('#open-project');
 var $quit = $('#quit');
 var $mainFrame = $('#main-iframe');
 
@@ -379,17 +383,6 @@ win.on('close', function() {
   this.close(true);
 });
 
-$openProject.on('change', function() {
-  var path = this.files[0].path;
-  var name = this.files[0].name;
-  console.log(path, name);
-  if (path !== '') {
-    addIntComic(path, name);
-    // reset its value so it can catch the next event in case we select the same
-    // previous value
-    this.value = '';
-  }
-});
 
 
 

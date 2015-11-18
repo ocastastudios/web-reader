@@ -1,14 +1,37 @@
-<div>
-  <label>Open comic in your computer<input type="file" id="open-local-comic" nwdirectory></label>
+<div id="accordion">
+  <h3>Open local folder</h3>
+  <div>
+    <form id="">
+      <label>Select folder<input type="file" id="open-local-folder" nwdirectory></label>
+    </form>
+  </div>
+  
+  <h3>Open local .elcx file</h3>
+  <div>
+    <form id="">
+      <label>Select file<input type="file" id="open-local-archive" accept=".elcx"></label>
+    </form>
+  </div>
+  
+  <h3>Open url</h3>
+  <div>
+    <form id="open-remote-form">
+      <label for="open-remote-url">Url</label><input type="text" id="open-remote-url" required>
+      <label>Save to<input type="file" id="open-remote-dest" nwdirectory required></label>
+      <input type="submit" id="open-remote-download" value="Download">
+    </form>
+  </div>
 </div>
 
 <script>
-$localComic = $('#open-local-comic');
+$("#accordion").accordion();
 
-$localComic.on('change', function() {
+$localFolder = $('#open-local-folder');
+$localArchive = $('#open-local-archive');
+
+$localFolder.on('change', function() {
   var path = this.files[0].path;
   var name = this.files[0].name;
-  console.log(path, name);
   if (path !== '') {
     sendMessage('local', { path: path, name: name });
     // reset its value so it can catch the next event in case we select the same previous value

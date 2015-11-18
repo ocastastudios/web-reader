@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electricomics Web Reader</title>
+  <link rel="stylesheet" href="js/lib/jquery-ui/jquery-ui.min.css">
   <link rel="stylesheet" href="fonts/muli/stylesheet.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/jquery-ui/jquery-ui.js"></script>
 <script>
 var sendMessage = function(type, obj) {
   var msg = {
@@ -18,11 +20,56 @@ var sendMessage = function(type, obj) {
   $.extend(msg, obj);
   window.parent.postMessage(JSON.stringify(msg), '*');
 };
+
+var dialogError = function(msg) {
+  var confirm = $('#dialog-error').dialog({
+    resizable: false,
+    modal: true,
+    width: 550,
+    buttons: {
+      'Close': function() {
+        $(this).dialog('close');
+      }
+    }
+  });
+  confirm.html('<p>' + msg + '</p>');
+  confirm.dialog('open');
+};
+
+window.addEventListener('message', function(e) {
+  if (e.origin !== 'file://') {
+    return false;
+  }
+
+  var msg;
+  try {
+    msg = JSON.parse(e.data);
+  }
+  catch (err) {
+    console.log('error in the received post message');
+    return false;
+  }
+
+  if (msg.type === 'error') {
+    dialogError(msg.message);
+  }
+
+  if (msg.type === 'library') {
+    loadLibraryItem(msg.item);
+  }
+});
 </script>
 
 <header>
   <h1>Electricomics</h1>
 </header>
+
+{{#if internal}}
+<section>
+  <h2>Load Comic</h2>
+  {{>load}}
+</section>
+{{/if}}
 
 <section>
   <h2>Our Comics</h2>
@@ -34,12 +81,9 @@ var sendMessage = function(type, obj) {
   {{>library}}
 </section>
 
-{{#if internal}}
-<section>
-  <h2>Load Comic</h2>
-  {{>load}}
-</section>
-{{/if}}
+<div class="dialog" id="dialog-error" title="Error">
+  <p>Error</p>
+</div>
   
 </body>
 </html>

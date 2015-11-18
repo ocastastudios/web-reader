@@ -301,6 +301,7 @@ var addIntComic = function(fsPath, name) {
  * @param {string} fsPath - Path in the filesystem of the comic
  * @param {string} name - Slug of the comic
  * @param {object} obj - Data from comic.json
+ * @returns {string} session id of the comic
  */
 var addComic = function(fsPath, name, obj) {
   projectsCounter++;
@@ -313,6 +314,68 @@ var addComic = function(fsPath, name, obj) {
   };
   app.use('/' + id, express.static(fsPath));
   localStorage.setItem('library', JSON.stringify(projects));
+  return id;
+};
+
+
+/**
+ *
+ */
+var addFolderUI = function(fsPath, name) {
+  var str;
+  var obj;
+  var id;
+  var jPath = path.join(fsPath, 'comic.json');
+  if (!exists(jPath)) {
+    // no comic.json in the folder
+    sendMessage('error', { message: 'File <em>' + jPath + '</em> not found.' });
+    return false;
+  }
+  str = fs.readFileSync(jPath);
+  try {
+    obj = JSON.parse(str);
+  }
+  catch (e) {
+    // impossible to read comic.json correctly
+    sendMessage('error', { message: 'Impossible to read file <em>' + jPath + '</em>.' });
+    return false;
+  }
+  id = addComic(fsPath, name, obj);
+  sendMessage('library', { item: projects[id] });
+  // // check if we already have this comic in memory
+  // for (var p in projects) {
+  //   if (projects.hasOwnProperty(p)) {
+  //     if (projects[p].fsPath === fsPath) {
+  //       // if we already have this comic, check version
+  //       if (obj.version <= projects[p].data.version) {
+  //         // if the version we try to upload is older or equal the one we
+  //         // already have, ask what to do
+  //         sendMessage('error', { message: 'It seems like the version of <em>' + fsPath + '</em> you are trying to load is older than the current available one. Are you sure you want to overwrite it?' });
+  //         // todo the answer to this
+  //       }
+  //       else {
+  //         // if the version we try to upload is newer, take it
+  //         addComic(fsPath, name, obj);
+  //       }
+  //     }
+  //   }
+  // }
+};
+
+
+/*
+ * Check if file or directory exists
+ * @param {string} fsPath - Path in the filesystem to test
+ * @returns {boolean} true if it exists
+ */
+var exists = function(fsPath) {
+  try {
+    fs.statSync(fsPath);
+    return true;
+  }
+  catch (e) {
+    return false;
+  }
 };
 
 
@@ -321,8 +384,12 @@ var addComic = function(fsPath, name, obj) {
  * Communications between the app container (which runs under file://) and the pages in the local server (which runs under http://) can ben done only through window.postMessage (a method that enables cross-origin communication)
  * @param {string} type - Type of the message
  */
-var sendMessage = function(type) {
-  $mainFrame.get(0).contentWindow.postMessage('{"type": "'+ type + '"}', serverUrl);
+var sendMessage = function(type, obj) {
+  var msg = {
+    type: type
+  };
+  $.extend(msg, obj);
+  $mainFrame.get(0).contentWindow.postMessage(JSON.stringify(msg), serverUrl);
 };
 
 
@@ -342,7 +409,7 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'local') {
-    addIntComic(msg.path, msg.name);
+    addFolderUI(msg.path, msg.name);
   }
 
   if (msg.type === 'url') {

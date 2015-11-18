@@ -72,39 +72,6 @@ input[type=file] {
   color: #AAA;
 }
 
-.tabs {
-  background: #EEE;
-  border-bottom: 1px solid #333;
-  color: #333;
-  font-family: sans-serif;
-  font-size: 0;
-  height: 21px;
-  padding: 5px 0 0 5px;
-}
-.tab {
-  border: 1px solid #333;
-  border-bottom: 0 none;
-  cursor: pointer;
-  font-size: .8rem;
-  margin: 0 1px;
-  padding: 0 4px;
-  white-space: nowrap;
-}
-.tab:hover {
-  background: #09F;
-  color: #FFF;
-}
-.tab-selected,
-.tab-selected:hover {
-  background: #333;
-  color: #EEE;
-  padding-bottom: 1px;
-}
-.tab-unsaved:after {
-  content: ' *';
-  vertical-align: sub;
-}
-
 .dialog {
   display: none;
 }
@@ -128,10 +95,6 @@ input[type=file] {
 
   <div class="dialog" id="dialog-close-app" title="Quit the app?">
     <p>Are you sure you want to quit the app?</p>
-  </div>
-
-  <div class="dialog" id="dialog-project-open" title="Open project">
-    <p>Comic folder not valid, do you want to open another comic?</p>
   </div>
   
   <script src="public/js/lib/jquery.min.js"></script>

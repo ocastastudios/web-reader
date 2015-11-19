@@ -41,7 +41,7 @@ var path = require('path');
 var fs = require('fs');
 var exphbs = require('express-handlebars');
 var Download = require('download');
-var dataJson = require('./data.json');
+var DecompressZip = require('decompress-zip');
 
 // settings
 var options = {
@@ -130,7 +130,7 @@ var serverStart = function() {
     server.listen(options.port, function() {
       $mainFrame.attr('src', serverUrl + '/splashscreen.html');
       loadIntComics();
-      loadExtComics();
+      // loadExtComics();
       $mainFrame.load(function() {
         sendMessage('start');
       });
@@ -156,179 +156,46 @@ var serverStart = function() {
  * Load all internal comics
  */
 var loadIntComics = function() {
-  var dataComics = dataJson.comics;
-  var localComics = JSON.parse(localStorage.getItem('comics') || '{}');
-  var id;
-  var str;
-  var obj;
+  var comicsPath = path.join(process.cwd(), 'comics');
+
+  if (!exists(comicsPath)) {
+    return false;
+  }
+
+  var comicsDir = fs.readdirSync(comicsPath);
+  var currentComic;
+  var comicJson;
+  var comicData;
   var fsPath;
-  var serverPath;
-  for (var i = 0; i < dataComics.length; i++) {
-    id = dataComics[i].slug;
-    fsPath = path.join(process.cwd(), 'comics', id);
-    serverPath = '/' + id;
-    // if we already have that comic and that version, load localstorage data
-    if (localComics.hasOwnProperty(id) &&
-      dataComics[i].version === localComics[id].data.version) {
-      comics[id] = localComics[id];
-      app.use(serverPath, express.static(fsPath));
-    }
-    // otherwise load from its own comic.json
-    else {
-      str = fs.readFileSync(path.join(fsPath, 'comic.json'));
-      try {
-        obj = JSON.parse(str);
-        comics[id] = {
-          fsPath: fsPath,
-          serverPath: serverPath,
-          name: id,
-          data: obj
-        };
-        app.use(serverPath, express.static(fsPath));
-      }
-      catch (e) {
-        // do nothing
-      }
-    }
-  }
-  localStorage.setItem('comics', JSON.stringify(comics));
-};
-
-
-/**
- * Load all external comics
- */
-var loadExtComics = function() {
-  var localComics;
-  try {
-    localComics = JSON.parse(localStorage.getItem('library'));
-  }
-  catch (e) {
-    localComics = {};
-  }
-  for (var p in localComics) {
-    if (localComics.hasOwnProperty(p)) {
-      addIntComic(localComics[p].fsPath, localComics[p].name);
-
-      if (!exists(localComics[p].fsPath)) {
-        localStorage.setItem('library', JSON.stringify(projects));
-      }
-      else {
-        addComic(localComics[p].fsPath, localComics[p].name, localComics[p].data);
-      }
-    }
-  }
-};
-
-
-/**
- * Add comic from url
- * @param {string} url - Where to download the comic from
- * @param {string} fsPath - Path in the filesystem where to download the comic
- */
-var addUrlComic = function(url, fsPath) {
-  new Download({extract: true})
-    .get(url, fsPath)
-    .run( function(err, files) {
-      if (err) {
-        return false;
-      }
-      var name = '';
-      addIntComic(fsPath, name);
-      return true;
-    });
-};
-
-
-/**
- * Add comic from folder
- * @param {string} fsPath - Path in the filesystem of the comic
- */
-var addIntComic = function(fsPath, name) {
-  var jPath = path.join(fsPath, 'comic.json');
-  var str;
-  var obj;
-
-  if (!exists(jPath)) {
-    return false;
-  }
-  else {
-    str = fs.readFileSync(jPath);
-    try {
-      obj = JSON.parse(str);
-      addComic(fsPath, name, obj);
-    }
-    catch (e) {
-      return false;
-    }
-  }
-};
-
-
-/**
- * Add comic
- * @param {string} fsPath - Path in the filesystem of the comic
- * @param {string} name - Slug of the comic
- * @param {object} obj - Data from comic.json
- * @returns {string} session id of the comic
- */
-var addComic = function(fsPath, name, obj) {
-  projectsCounter++;
-  var id = projectsCounter + '-' + name;
-  projects[id] = {
-    name: name,
-    fsPath: fsPath,
-    serverPath: '/' + id,
-    data: obj
-  };
-  app.use('/' + id, express.static(fsPath));
-  localStorage.setItem('library', JSON.stringify(projects));
-  return id;
-};
-
-
-/**
- *
- */
-var addFolderUI = function(fsPath, name) {
-  var str;
-  var obj;
   var id;
-  var jPath = path.join(fsPath, 'comic.json');
-  if (!exists(jPath)) {
-    // no comic.json in the folder
-    sendMessage('error', { message: 'File <em>' + jPath + '</em> not found.' });
-    return false;
+  var serverPath;
+
+  for (var i = 0; i < comicsDir.length; i++) {
+    currentComic = comicsDir[i];
+    fsPath = path.join(comicsPath, currentComic);
+    comicJson = path.join(fsPath, 'comic.json');
+    
+    if (!exists(comicJson)) {
+      continue;
+    }
+    try {
+      comicData = JSON.parse(fs.readFileSync(comicJson));
+    }
+    catch(e) {
+      continue;
+    }
+
+    id = comicData.slug;
+    serverPath = '/' + id;
+    
+    comics[id] = {
+      fsPath: fsPath,
+      serverPath: serverPath,
+      name: id,
+      data: comicData
+    };
+    app.use(serverPath, express.static(fsPath));
   }
-  str = fs.readFileSync(jPath);
-  try {
-    obj = JSON.parse(str);
-  }
-  catch (e) {
-    // impossible to read comic.json correctly
-    sendMessage('error', { message: 'Impossible to read file <em>' + jPath + '</em>.' });
-    return false;
-  }
-  id = addComic(fsPath, name, obj);
-  sendMessage('library', { item: projects[id] });
-  // // check if we already have this comic in memory
-  // for (var p in projects) {
-  //   if (projects.hasOwnProperty(p)) {
-  //     if (projects[p].fsPath === fsPath) {
-  //       // if we already have this comic, check version
-  //       if (obj.version <= projects[p].data.version) {
-  //         // if the version we try to upload is older or equal the one we
-  //         // already have, ask what to do
-  //         sendMessage('error', { message: 'It seems like the version of <em>' + fsPath + '</em> you are trying to load is older than the current available one. Are you sure you want to overwrite it?' });
-  //         // todo the answer to this
-  //       }
-  //       else {
-  //         // if the version we try to upload is newer, take it
-  //         addComic(fsPath, name, obj);
-  //       }
-  //     }
-  //   }
-  // }
 };
 
 
@@ -377,8 +244,12 @@ window.addEventListener('message', function(e) {
     return false;
   }
 
-  if (msg.type === 'local') {
+  if (msg.type === 'local-folder') {
     addFolderUI(msg.path, msg.name);
+  }
+
+  if (msg.type === 'local-archive') {
+    addArchiveUI(msg.path, msg.name);
   }
 
   if (msg.type === 'url') {

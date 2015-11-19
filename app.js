@@ -235,6 +235,10 @@ var addComicFolder = function(fsPath) {
   var comicJson = path.join(fsPath, 'comic.json');
   var comicData;
 
+  if (library.indexOf(fsPath) !== -1) {
+    sendMessage('error', { message: 'Comic in folder <em>' + fsPath + '</em> is already loaded.' });
+    return false;
+  }
   if (!exists(fsPath)) {
     sendMessage('error', { message: 'Folder <em>' + fsPath + '</em> not found.' });
     return false;

@@ -1,6 +1,6 @@
 # TODO
 
-* [ ] when adding local directory, check that it's not already open
+* [x] when adding local directory, check that it's not already open
 * [ ] when downloading archive, check we are not overwriting anything
 * [ ] when extracting archive, check we are not overwriting anything
 * [ ] add comic entry in the UI with ajax and scroll to it or show it or similar

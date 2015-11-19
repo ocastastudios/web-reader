@@ -42,6 +42,7 @@ var fs = require('fs');
 var exphbs = require('express-handlebars');
 var Download = require('download');
 var DecompressZip = require('decompress-zip');
+var request = require('request');
 
 // settings
 var options = {
@@ -303,18 +304,28 @@ var addComicArchive = function(fsPath) {
 
 /**
  * Add comic from remote url
+ * We have to expand the url to get the proper final file name
+ * Example from http://www.2ality.com/2012/04/expand-urls.html 
  * @param {string} url - http/https url to download the archive from
  * @param {string} fsPath - Filesystem path where do download and extract the archive
  */
 var addComicUrl = function(url, dest) {
-  new Download().get(url).dest(dest).run(function(err, files) {
+  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
     if (err) {
       sendMessage('error', { message: 'Impossible to download from <em>' + url + '</em>.<br>Error: <pre>' + err + '</pre>' });
       return false;
     }
-    for (var i =0; i < files.length; i++) {
-      addComicArchive(path.join(files[i].history[1]));
-    }
+    var longUrl = response.request.href;
+    console.log(longUrl);
+    new Download().get(longUrl).dest(dest).run(function(err, files) {
+      if (err) {
+        sendMessage('error', { message: 'Impossible to download from <em>' + longUrl + '</em>.<br>Error: <pre>' + err + '</pre>' });
+        return false;
+      }
+      for (var i = 0; i < files.length; i++) {
+        // addComicArchive(path.join(files[i].history[1]));
+      }
+    });
   });
 };
 

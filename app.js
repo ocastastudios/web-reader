@@ -319,7 +319,7 @@ var addComicUrl = function(url, dest) {
       return false;
     }
     var longUrl = response.request.href;
-    new Download().get(longUrl).dest(dest).run(function(err, files) {
+    new Download().get(longUrl).dest(dest).use(downloadStatus).run(function(err, files) {
       if (err) {
         sendMessage('error', { message: 'Impossible to download from <em>' + longUrl + '</em>.<br>Error: <pre>' + err + '</pre>' });
         return false;
@@ -359,6 +359,38 @@ var sendMessage = function(type, obj) {
   };
   $.extend(msg, obj);
   $mainFrame.get(0).contentWindow.postMessage(JSON.stringify(msg), serverUrl);
+};
+
+
+/**
+ * Progress of the download
+ * @param {object} res - response data
+ * @param {string} url - url we are downloading from
+ * @param {function} cb - Callback when download is completed
+ */
+var downloadStatus = function(res, url, cb) {
+  if (!res.headers['content-length']) {
+    cb();
+    return false;
+  }
+
+  var total = parseInt(res.headers['content-length'], 10);
+  var totalPerc = 100 / total;
+  var current = 0;
+  var currentPerc = 0;
+  var prevCurrentPerc;
+  res.on('data', function(data) {
+    current += data.length;
+    currentPerc = parseInt(current * totalPerc, 10);
+    if (currentPerc !== prevCurrentPerc) {
+      prevCurrentPerc = currentPerc;
+      console.log(currentPerc + '%');
+    }
+  });
+  res.on('end', function() {
+    console.log('done');
+    cb();
+  });
 };
 
 

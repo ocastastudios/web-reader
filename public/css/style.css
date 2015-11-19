@@ -28,3 +28,7 @@ body {
 body, input, textarea, select, button {
   font-family: 'muli', Arial, sans-serif;
 }
+
+.dialog {
+  display: none;
+}

@@ -96,6 +96,7 @@ var projectsCounter = 0;
 var projectExt = '.elcx';
 var projectExtReg = new RegExp(projectExt + '$', 'i');
 var comics = {};
+var library = [];
 
 
 /**
@@ -130,7 +131,7 @@ var serverStart = function() {
     server.listen(options.port, function() {
       $mainFrame.attr('src', serverUrl + '/splashscreen.html');
       loadIntComics();
-      // loadExtComics();
+      loadExtComics();
       $mainFrame.load(function() {
         sendMessage('start');
       });
@@ -196,6 +197,59 @@ var loadIntComics = function() {
     };
     app.use(serverPath, express.static(fsPath));
   }
+};
+
+
+/**
+ * Load all external comics
+ */
+var loadExtComics = function() {
+  var localComics;
+  var comicJson;
+  var comicData;
+  var fsPath;
+  var id;
+  var serverPath;
+  var name;
+
+  try {
+    localComics = JSON.parse(localStorage.getItem('library'));
+  }
+  catch (e) {
+    localComics = [];
+  }
+  for (var i = 0; i < localComics.length; i++) {
+    fsPath = localComics[i];
+    comicJson = path.join(fsPath, 'comic.json');
+
+    if (!exists(fsPath)) {
+      continue;
+    }
+    if (!exists(comicJson)) {
+      continue;
+    }
+    try {
+      comicData = JSON.parse(fs.readFileSync(comicJson));
+    }
+    catch(e) {
+      continue;
+    }
+
+    projectsCounter++;
+    name = 'ext';
+    id = projectsCounter + '-' + name;
+    serverPath = '/' + id;
+    
+    projects[id] = {
+      fsPath: fsPath,
+      serverPath: serverPath,
+      name: name,
+      data: comicData
+    };
+    app.use(serverPath, express.static(fsPath));
+    library.push(fsPath);
+  }
+  localStorage.setItem('library', JSON.stringify(library));
 };
 
 

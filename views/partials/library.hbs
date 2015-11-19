@@ -1,3 +1,29 @@
+{{#each library}}
+{{#with data}}
+<h3>{{title}}</h3>
+<p>{{summary}}</p>
+
+<img src="{{../serverPath}}/cover.png" alt="{{title}} cover">
+
+<div>version: {{version}}</div>
+<div>published: {{publish_date}}</div>
+<div>orientation: {{config.orientation}}</div>
+
+{{#if creators}}
+<h4>Creators</h4>
+<dl>
+  {{#each creators}}
+  <dt>{{name}}</dt>
+    <dd>{{role}}</dd>
+  {{/each}}
+</dl>
+{{/if}}
+
+<a href="/{{slug}}/">View comic</a>
+{{/with}}
+{{/each}}
+
+
 <script>
 var loadLibraryItem = function(item) {
   console.log(item);

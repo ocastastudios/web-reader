@@ -130,7 +130,7 @@ var serverStart = function() {
 
     server = http.createServer(app);
     server.listen(options.port, function() {
-      $mainFrame.attr('src', serverUrl + '/splashscreen.html');
+      $mainFrame.attr('src', serverUrl + '/loading.html');
       loadIntComics();
       loadExtComics();
       $mainFrame.load(function() {
@@ -389,28 +389,28 @@ window.addEventListener('message', function(e) {
 
 
 // UI
-var $quit = $('#quit');
+// var $quit = $('#quit');
 var $mainFrame = $('#main-iframe');
 
 
-$quit.on('click', function() {
-  var confirm = $('#dialog-close-app').dialog({
-    resizable: false,
-    modal: true,
-    width: 550,
-    buttons: {
-      'Quit': function() {
-        $(this).dialog('close');
-        win.close();
-      },
-      Cancel: function() {
-        $(this).dialog('close');
-        return;
-      }
-    }
-  });
-  confirm.dialog('open');
-});
+// $quit.on('click', function() {
+//   var confirm = $('#dialog-close-app').dialog({
+//     resizable: false,
+//     modal: true,
+//     width: 550,
+//     buttons: {
+//       'Quit': function() {
+//         $(this).dialog('close');
+//         win.close();
+//       },
+//       Cancel: function() {
+//         $(this).dialog('close');
+//         return;
+//       }
+//     }
+//   });
+//   confirm.dialog('open');
+// });
 
 // use the close event to catch every type of closing, not only the one from our
 // top menu (e.g. keyboard shortcut close)

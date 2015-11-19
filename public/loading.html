@@ -7,29 +7,27 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>loading</h1>
 
-<script src="js/lib/jquery.min.js"></script>
+SPLASHSCREEN!!
+  
 <script>
-if (window.location.search === '') {
-  window.location = 'empty.html';
-}
+window.addEventListener('message', function(e) {
+  if (e.origin !== 'file://') {
+    return false;
+  }
 
-var searchParams = {};
-var searchArr = window.location.search.substring(1).split('&');
-var tmp;
-for (var i = 0; i < searchArr.length; i++) {
-  tmp = searchArr[i].split('=');
-  searchParams[ tmp[0] ] = tmp[1];
-}
+  var msg;
+  try {
+    msg = JSON.parse(e.data);
+  }
+  catch(err) {
+    return false;
+  }
 
-if (!searchParams.path) {
-  window.location = 'empty.html';
-}
-
-localStorage.setItem(searchParams.id, '{}');
-window.location = searchParams.id + '/index.html';
+  if (msg.type === 'start') {
+    window.location = '/home';
+  }
+});
 </script>
-
 </body>
 </html>

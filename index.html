@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electricomics Web Reader</title>
   <link rel="stylesheet" href="public/js/lib/jquery-ui/jquery-ui.min.css">
   <style>
@@ -15,83 +16,25 @@ html, body {
   margin: 0;
   padding: 0;
 }
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.iframes {
+.iframe-wrapper {
   background: #333;
   height: 100%;
-  margin-top: 3px;
   position: relative;
 }
 .iframe {
-  display: none;
   height: 100%;
   position: absolute;
   width: 100%;
 }
-.iframe-selected {
-  display: block;
-}
-
-input[type=file] {
-  display: none;
-}
-
-.menu {
-  background: #EEE;
-  border-bottom: 1px solid #CCC;
-  font-size: 0;
-  padding: 0;
-}
-.menu-item {
-  background: inherit;
-  border: 0 none;
-  cursor: pointer;
-  font-family: sans-serif;
-  font-size: 14px;
-  outline: 0 none;
-  padding: 4px 8px;
-}
-.menu-item:hover {
-  background: #CCC;
-}
-.menu-item:active {
-  background: #09F;
-  color: #FFF;
-}
-.menu-item-disabled {
-  color: #AAA;
-  cursor: default;
-}
-.menu-item-disabled:hover,
-.menu-item-disabled:active {
-  background: inherit;
-  color: #AAA;
-}
-
 .dialog {
   display: none;
 }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <header>
-      <nav class="menu">
-        <label class="menu-item">Open Comic<input type="file" id="open-project" nwdirectory></label>
-        <input class="menu-item menu-item-project menu-item-disabled" type="button" id="close-project" value="Close Comic">
-        <input class="menu-item" type="button" id="quit" value="Quit">
-        <input class="menu-item menu-item-project menu-item-disabled" type="button" id="comic-preview" value="View Comic in Browser">
-        <input class="menu-item menu-item-project menu-item-disabled" type="button" id="comic-folder" value="View Comic Folder">
-      </nav>
-    </header>
-    <main class="iframes" id="iframes">
-      <iframe class="iframe iframe-selected" src="public/empty.html" frameborder="0" id="main-iframe" nwdisable nwUserAgent="elcx-web-reader"></iframe>
-    </main>
-  </div>
+  <main class="iframe-wrapper">
+    <iframe id="main-iframe" class="iframe" src="public/empty.html" frameborder="0" nwdisable nwUserAgent="elcx-web-reader"></iframe>
+  </main>
 
   <div class="dialog" id="dialog-close-app" title="Quit the app?">
     <p>Are you sure you want to quit the app?</p>

@@ -29,6 +29,10 @@ body, input, textarea, select, button {
   font-family: 'muli', Arial, sans-serif;
 }
 
+input[type=file] {
+  display: none;
+}
+
 .dialog {
   display: none;
 }

@@ -66,7 +66,7 @@ else {
 // https://github.com/nwjs/nw.js/issues/2462
 var nativeMenuBar = new nwgui.Menu({ type: 'menubar' });
 try {
-  nativeMenuBar.createMacBuiltin('Electricomics Generator');
+  nativeMenuBar.createMacBuiltin('Electricomics Web Reader');
   win.menu = nativeMenuBar;
 } catch (err) {
   // console.log(err.message);
@@ -169,7 +169,7 @@ var loadIntComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    AddComicInt(fsPath);
+    addComicInt(fsPath);
   }
 };
 
@@ -179,7 +179,7 @@ var loadIntComics = function() {
  * @param {string} fsPath - Filesystem path of the archive
  * @returns {boolean} true if import was successful
  */
-var AddComicInt = function(fsPath) {
+var addComicInt = function(fsPath) {
   var comicJson = path.join(fsPath, 'comic.json');
   var comicData;
   

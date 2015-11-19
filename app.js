@@ -274,12 +274,11 @@ var addComicFolder = function(fsPath) {
  * @param {string} fsPath - Filesystem path of the archive
  */
 var addComicArchive = function(fsPath) {
-  // if (!projectExtReg.test(fsPath)) {
-  //   sendMessage('error', { message: 'File must be an <em>.elcx</em> archive.' });
-  //   return false;
-  // }
+  if (!projectExtReg.test(fsPath)) {
+    sendMessage('error', { message: 'File must be an <em>.elcx</em> archive.' });
+    return false;
+  }
   var dest = fsPath.replace(projectExtReg, '');
-  dest += '-comic';
   var unzipper = new DecompressZip(fsPath);
 
   unzipper.on('error', function(err) {
@@ -316,14 +315,13 @@ var addComicUrl = function(url, dest) {
       return false;
     }
     var longUrl = response.request.href;
-    console.log(longUrl);
     new Download().get(longUrl).dest(dest).run(function(err, files) {
       if (err) {
         sendMessage('error', { message: 'Impossible to download from <em>' + longUrl + '</em>.<br>Error: <pre>' + err + '</pre>' });
         return false;
       }
       for (var i = 0; i < files.length; i++) {
-        // addComicArchive(path.join(files[i].history[1]));
+        addComicArchive(path.join(files[i].history[1]));
       }
     });
   });

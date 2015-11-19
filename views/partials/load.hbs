@@ -18,7 +18,7 @@
     <form id="open-remote-form">
       <label for="open-remote-url">Url</label><input type="text" id="open-remote-url" required>
       <label>Save to<input type="file" id="open-remote-dest" nwdirectory required></label>
-      <input type="submit" id="open-remote-download" value="Download">
+      <input type="submit" value="Download">
     </form>
   </div>
 </div>
@@ -26,14 +26,17 @@
 <script>
 $("#accordion").accordion();
 
-$localFolder = $('#open-local-folder');
-$localArchive = $('#open-local-archive');
+var $localFolder = $('#open-local-folder');
+var $localArchive = $('#open-local-archive');
+var $openRemoteForm = $('#open-remote-form');
+var $openRemoteUrl = $('#open-remote-url');
+var $openRemoteDest = $('#open-remote-dest');
+
 
 $localFolder.on('change', function() {
   var path = this.files[0].path;
-  var name = this.files[0].name;
   if (path !== '') {
-    sendMessage('local-folder', { path: path, name: name });
+    sendMessage('local-folder', { path: path });
     // reset its value so it can catch the next event in case we select the same previous value
     this.value = '';
   }
@@ -41,12 +44,24 @@ $localFolder.on('change', function() {
 
 $localArchive.on('change', function() {
   var path = this.files[0].path;
-  var name = this.files[0].name;
+  // var name = this.files[0].name;
   console.log(path, name);
   if (path !== '') {
-    sendMessage('local-archive', { path: path, name: name });
+    sendMessage('local-archive', { path: path });
     // reset its value so it can catch the next event in case we select the same previous value
     this.value = '';
   }
+});
+
+$openRemoteForm.on('submit', function(e) {
+  e.preventDefault();
+  var url = $openRemoteUrl.val();
+  var path = $openRemoteDest.get(0).files[0].path;
+
+  if (url !== '' && path !== '') {
+    sendMessage('url', { url: url, path: path });
+    // $openRemoteDest.val('');
+  }
+
 });
 </script>

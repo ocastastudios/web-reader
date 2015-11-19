@@ -15,3 +15,5 @@
   * [ ] remove entry (but do not delete files) - only if page is viewed from inside the app
   * [ ] actually delete files - only if page is viewed from inside the app
 * [ ] add "about Electricomics" section
+* [ ] better style to loading.html
+* [ ] add progress bar to download and extract

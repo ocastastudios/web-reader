@@ -30,7 +30,7 @@ body, input, textarea, select, button {
 }
 
 input[type=file] {
-  display: none;
+  /*display: none;*/
 }
 
 .dialog {

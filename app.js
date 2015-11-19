@@ -210,30 +210,14 @@ var loadExtComics = function() {
     if (localComics.hasOwnProperty(p)) {
       addIntComic(localComics[p].fsPath, localComics[p].name);
 
-      fs.stat(localComics[p].fsPath, function(err) {
-        if (err == null) {
-          // folder exists
-          return ok(localComics[p]);
-        }
-        else if (err.code === 'ENOENT') {
-          // folder does not exist
-          return ko();
-        }
-        else {
-          // some other error that we threat as if folder exists
-          return ok(localComics[p]);
-        }
-      });
+      if (!exists(localComics[p].fsPath)) {
+        localStorage.setItem('library', JSON.stringify(projects));
+      }
+      else {
+        addComic(localComics[p].fsPath, localComics[p].name, localComics[p].data);
+      }
     }
   }
-
-  var ko = function() {
-    localStorage.setItem('library', JSON.stringify(projects));
-  };
-
-  var ok = function(obj) {
-    addComic(obj.fsPath, obj.name, obj.data);
-  };
 };
 
 
@@ -262,29 +246,14 @@ var addUrlComic = function(url, fsPath) {
  */
 var addIntComic = function(fsPath, name) {
   var jPath = path.join(fsPath, 'comic.json');
+  var str;
+  var obj;
 
-  fs.stat(jPath, function(err) {
-    if (err == null) {
-      // file exists
-      return ok();
-    }
-    else if (err.code === 'ENOENT') {
-      // file does not exist
-      return ko();
-    }
-    else {
-      // some other error that we threat as if file exists
-      return ok();
-    }
-  });
-
-  var ko = function() {
+  if (!exists(jPath)) {
     return false;
-  };
-
-  var ok = function() {
-    var str = fs.readFileSync(jPath);
-    var obj;
+  }
+  else {
+    str = fs.readFileSync(jPath);
     try {
       obj = JSON.parse(str);
       addComic(fsPath, name, obj);
@@ -292,7 +261,7 @@ var addIntComic = function(fsPath, name) {
     catch (e) {
       return false;
     }
-  };
+  }
 };
 
 

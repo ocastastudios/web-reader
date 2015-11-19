@@ -164,39 +164,44 @@ var loadIntComics = function() {
   }
 
   var comicsDir = fs.readdirSync(comicsPath);
-  var currentComic;
-  var comicJson;
-  var comicData;
   var fsPath;
-  var id;
-  var serverPath;
 
   for (var i = 0; i < comicsDir.length; i++) {
-    currentComic = comicsDir[i];
-    fsPath = path.join(comicsPath, currentComic);
-    comicJson = path.join(fsPath, 'comic.json');
-    
-    if (!exists(comicJson)) {
-      continue;
-    }
-    try {
-      comicData = JSON.parse(fs.readFileSync(comicJson));
-    }
-    catch(e) {
-      continue;
-    }
-
-    id = comicData.slug;
-    serverPath = '/' + id;
-    
-    comics[id] = {
-      fsPath: fsPath,
-      serverPath: serverPath,
-      name: id,
-      data: comicData
-    };
-    app.use(serverPath, express.static(fsPath));
+    fsPath = path.join(comicsPath, comicsDir[i]);
+    AddComicInt(fsPath);
   }
+};
+
+
+/**
+ * Add comic from the proprietary folder in the app
+ * @param {string} fsPath - Filesystem path of the archive
+ * @returns {boolean} true if import was successful
+ */
+var AddComicInt = function(fsPath) {
+  var comicJson = path.join(fsPath, 'comic.json');
+  var comicData;
+  
+  if (!exists(comicJson)) {
+    return false;
+  }
+  try {
+    comicData = JSON.parse(fs.readFileSync(comicJson));
+  }
+  catch(e) {
+    return false;
+  }
+
+  var id = comicData.slug;
+  var serverPath = '/' + id;
+  
+  comics[id] = {
+    fsPath: fsPath,
+    serverPath: serverPath,
+    name: id,
+    data: comicData
+  };
+  app.use(serverPath, express.static(fsPath));
 };
 
 
@@ -205,51 +210,112 @@ var loadIntComics = function() {
  */
 var loadExtComics = function() {
   var localComics;
-  var comicJson;
-  var comicData;
   var fsPath;
-  var id;
-  var serverPath;
-  var name;
 
   try {
-    localComics = JSON.parse(localStorage.getItem('library'));
+    localComics = JSON.parse(localStorage.getItem('library')) || [];
   }
   catch (e) {
     localComics = [];
   }
   for (var i = 0; i < localComics.length; i++) {
     fsPath = localComics[i];
-    comicJson = path.join(fsPath, 'comic.json');
-
-    if (!exists(fsPath)) {
-      continue;
-    }
-    if (!exists(comicJson)) {
-      continue;
-    }
-    try {
-      comicData = JSON.parse(fs.readFileSync(comicJson));
-    }
-    catch(e) {
-      continue;
-    }
-
-    projectsCounter++;
-    name = 'ext';
-    id = projectsCounter + '-' + name;
-    serverPath = '/' + id;
-    
-    projects[id] = {
-      fsPath: fsPath,
-      serverPath: serverPath,
-      name: name,
-      data: comicData
-    };
-    app.use(serverPath, express.static(fsPath));
-    library.push(fsPath);
+    addComicFolder(fsPath);
   }
+};
+
+
+/**
+ * Add comic from folder
+ * @param {string} fsPath - Filesystem path of the folder
+ * @returns {boolean} true if import was successful
+ */
+var addComicFolder = function(fsPath) {
+  var comicJson = path.join(fsPath, 'comic.json');
+  var comicData;
+
+  if (!exists(fsPath)) {
+    sendMessage('error', { message: 'Folder <em>' + fsPath + '</em> not found.' });
+    return false;
+  }
+  if (!exists(comicJson)) {
+    sendMessage('error', { message: 'Folder <em>' + comicJson + '</em> not found.' });
+    return false;
+  }
+  try {
+    comicData = JSON.parse(fs.readFileSync(comicJson));
+  }
+  catch(e) {
+    sendMessage('error', { message: 'Impossible to read file <em>' + comicJson + '</em>.' });
+    return false;
+  }
+
+  projectsCounter++;
+  var name = 'ext';
+  var id = projectsCounter + '-' + name;
+  var serverPath = '/' + id;
+  
+  projects[id] = {
+    fsPath: fsPath,
+    serverPath: serverPath,
+    name: name,
+    data: comicData
+  };
+  app.use(serverPath, express.static(fsPath));
+  library.push(fsPath);
   localStorage.setItem('library', JSON.stringify(library));
+  return true;
+};
+
+
+/**
+ * Add comic from archive file
+ * @param {string} fsPath - Filesystem path of the archive
+ */
+var addComicArchive = function(fsPath) {
+  // if (!projectExtReg.test(fsPath)) {
+  //   sendMessage('error', { message: 'File must be an <em>.elcx</em> archive.' });
+  //   return false;
+  // }
+  var dest = fsPath.replace(projectExtReg, '');
+  dest += '-comic';
+  var unzipper = new DecompressZip(fsPath);
+
+  unzipper.on('error', function(err) {
+    sendMessage('error', { message: 'Impossible to extract file <em>' + fsPath + '</em>.<br>Error: <pre>' + err + '</pre>' });
+  });
+
+  unzipper.on('extract', function() {
+    addComicFolder(dest);
+  });
+
+  // unzipper.on('progress', function(index, count) {
+  // });
+
+  unzipper.extract({
+    path: dest,
+    filter: function(file) {
+      return file.type !== 'SymbolicLink';
+    }
+  });
+};
+
+
+/**
+ * Add comic from remote url
+ * @param {string} url - http/https url to download the archive from
+ * @param {string} fsPath - Filesystem path where do download and extract the archive
+ */
+var addComicUrl = function(url, dest) {
+  new Download().get(url).dest(dest).run(function(err, files) {
+    if (err) {
+      sendMessage('error', { message: 'Impossible to download from <em>' + url + '</em>.<br>Error: <pre>' + err + '</pre>' });
+      return false;
+    }
+    for (var i =0; i < files.length; i++) {
+      addComicArchive(path.join(files[i].history[1]));
+    }
+  });
 };
 
 
@@ -299,15 +365,15 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'local-folder') {
-    addFolderUI(msg.path, msg.name);
+    addComicFolder(msg.path);
   }
 
   if (msg.type === 'local-archive') {
-    addArchiveUI(msg.path, msg.name);
+    addComicArchive(msg.path);
   }
 
   if (msg.type === 'url') {
-    addUrlComic(msg.url, msg.path);
+    addComicUrl(msg.url, msg.path);
   }
 }, false);
 

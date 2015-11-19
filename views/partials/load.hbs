@@ -33,7 +33,18 @@ $localFolder.on('change', function() {
   var path = this.files[0].path;
   var name = this.files[0].name;
   if (path !== '') {
-    sendMessage('local', { path: path, name: name });
+    sendMessage('local-folder', { path: path, name: name });
+    // reset its value so it can catch the next event in case we select the same previous value
+    this.value = '';
+  }
+});
+
+$localArchive.on('change', function() {
+  var path = this.files[0].path;
+  var name = this.files[0].name;
+  console.log(path, name);
+  if (path !== '') {
+    sendMessage('local-archive', { path: path, name: name });
     // reset its value so it can catch the next event in case we select the same previous value
     this.value = '';
   }

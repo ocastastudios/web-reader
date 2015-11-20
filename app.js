@@ -219,6 +219,7 @@ var loadExtComics = function() {
   catch (e) {
     localComics = [];
   }
+  localStorage.setItem('library', JSON.stringify(library));
   for (var i = 0; i < localComics.length; i++) {
     fsPath = localComics[i];
     addComicFolder(fsPath);

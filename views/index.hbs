@@ -35,6 +35,12 @@ var dialogError = function(msg) {
   confirm.html('<p>' + msg + '</p>');
   confirm.dialog('open');
 };
+
+var receiveMessage = function(msg) {
+  if (msg.type === 'error') {
+    dialogError(msg.message);
+  }
+};
 </script>
 
 {{!-- nothing should be included as a partial template above this line --}}
@@ -67,23 +73,6 @@ var dialogError = function(msg) {
 
 {{!-- nothing should be included as a partial template under this line --}}
 <script>
-var receiveMessage = function(msg) {
-  if (msg.type === 'error') {
-    dialogError(msg.message);
-    return;
-  }
-  
-  if (msg.type === 'progress-url') {
-    $progressbarUrl.progressbar('value', msg.message);
-    return;
-  }
-
-  if (msg.type === 'library') {
-    loadLibraryItem(msg.item);
-    return;
-  }
-};
-
 window.addEventListener('message', function(e) {
   if (e.origin !== 'file://') {
     return false;

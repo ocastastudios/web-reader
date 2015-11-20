@@ -76,4 +76,13 @@ $progressbarUrl.progressbar({
     $progressLabelUrl.text('Complete!');
   }
 });
+
+var loadReceiveMessage = receiveMessage;
+receiveMessage = function(msg) {
+  loadReceiveMessage(msg);
+
+  if (msg.type === 'progress-url') {
+    $progressbarUrl.progressbar('value', msg.message);
+  }
+};
 </script>

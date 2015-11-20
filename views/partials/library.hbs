@@ -82,4 +82,13 @@ $('.remove-entry').on('click', function(e) {
   var id = $(this).data('id');
   dialogRemoveEntry(id);
 });
+
+var libraryReceiveMessage = receiveMessage;
+receiveMessage = function(msg) {
+  libraryReceiveMessage(msg);
+
+  if (msg.type === 'library') {
+    loadLibraryItem(msg.item);
+  }
+};
 </script>

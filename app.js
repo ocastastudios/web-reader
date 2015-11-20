@@ -384,11 +384,11 @@ var downloadStatus = function(res, url, cb) {
     currentPerc = parseInt(current * totalPerc, 10);
     if (currentPerc !== prevCurrentPerc) {
       prevCurrentPerc = currentPerc;
-      console.log(currentPerc + '%');
+      sendMessage('progress-url', { message: currentPerc });
     }
   });
   res.on('end', function() {
-    console.log('done');
+    sendMessage('progress-url', { message: 100 });
     cb();
   });
 };

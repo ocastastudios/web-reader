@@ -33,6 +33,7 @@ input[type=file] {
   /*display: none;*/
 }
 
-.dialog {
+.dialog,
+.progressbar {
   display: none;
 }

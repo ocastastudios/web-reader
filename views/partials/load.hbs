@@ -20,19 +20,17 @@
       <label>Save to<input type="file" id="open-remote-dest" nwdirectory required></label>
       <input type="submit" value="Download">
     </form>
+
+    <div class="progressbar" id="progressbar-url"><div class="progress-label">Downloading...</div></div>
   </div>
 </div>
 
 <script>
 $("#accordion").accordion();
 
+
+// forms
 var $localFolder = $('#open-local-folder');
-var $localArchive = $('#open-local-archive');
-var $openRemoteForm = $('#open-remote-form');
-var $openRemoteUrl = $('#open-remote-url');
-var $openRemoteDest = $('#open-remote-dest');
-
-
 $localFolder.on('change', function() {
   var path = this.files[0].path;
   if (path !== '') {
@@ -42,10 +40,9 @@ $localFolder.on('change', function() {
   }
 });
 
+var $localArchive = $('#open-local-archive');
 $localArchive.on('change', function() {
   var path = this.files[0].path;
-  // var name = this.files[0].name;
-  console.log(path, name);
   if (path !== '') {
     sendMessage('local-archive', { path: path });
     // reset its value so it can catch the next event in case we select the same previous value
@@ -53,15 +50,30 @@ $localArchive.on('change', function() {
   }
 });
 
+var $openRemoteForm = $('#open-remote-form');
+var $openRemoteUrl = $('#open-remote-url');
+var $openRemoteDest = $('#open-remote-dest');
 $openRemoteForm.on('submit', function(e) {
   e.preventDefault();
   var url = $openRemoteUrl.val();
   var path = $openRemoteDest.get(0).files[0].path;
-
   if (url !== '' && path !== '') {
     sendMessage('url', { url: url, path: path });
-    // $openRemoteDest.val('');
+    $progressbarUrl.show();
   }
+});
 
+
+// progress bar
+var $progressbarUrl = $('#progressbar-url');
+var $progressLabelUrl = $progressbarUrl.find('.progress-label');
+$progressbarUrl.progressbar({
+  value: false,
+  change: function() {
+    $progressLabelUrl.text($progressbarUrl.progressbar('value') + '%');
+  },
+  complete: function() {
+    $progressLabelUrl.text('Complete!');
+  }
 });
 </script>

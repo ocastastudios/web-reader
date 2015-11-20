@@ -35,40 +35,20 @@ var dialogError = function(msg) {
   confirm.html('<p>' + msg + '</p>');
   confirm.dialog('open');
 };
-
-window.addEventListener('message', function(e) {
-  if (e.origin !== 'file://') {
-    return false;
-  }
-
-  var msg;
-  try {
-    msg = JSON.parse(e.data);
-  }
-  catch (err) {
-    console.log('error in the received post message');
-    return false;
-  }
-
-  if (msg.type === 'error') {
-    dialogError(msg.message);
-  }
-
-  if (msg.type === 'library') {
-    loadLibraryItem(msg.item);
-  }
-});
 </script>
+
+{{!-- nothing should be included as a partial template above this line --}}
+{{!-- any included partial template should be independent and its exclusion should not break the main page --}}
 
 <header>
   <h1>Electricomics</h1>
 </header>
 
-{{#if internal}}
 <section>
   <h2>Load Comic</h2>
   {{>load}}
 </section>
+{{#if internal}}
 {{/if}}
 
 <section>
@@ -84,6 +64,41 @@ window.addEventListener('message', function(e) {
 <div class="dialog" id="dialog-error" title="Error">
   <p>Error</p>
 </div>
+
+{{!-- nothing should be included as a partial template under this line --}}
+<script>
+var receiveMessage = function(msg) {
+  if (msg.type === 'error') {
+    dialogError(msg.message);
+    return;
+  }
   
+  if (msg.type === 'progress-url') {
+    $progressbarUrl.progressbar('value', msg.message);
+    return;
+  }
+
+  if (msg.type === 'library') {
+    loadLibraryItem(msg.item);
+    return;
+  }
+};
+
+window.addEventListener('message', function(e) {
+  if (e.origin !== 'file://') {
+    return false;
+  }
+  var msg;
+  try {
+    msg = JSON.parse(e.data);
+  }
+  catch (err) {
+    console.log('error in the received post message');
+    return false;
+  }
+
+  receiveMessage(msg);
+});
+</script>  
 </body>
 </html>

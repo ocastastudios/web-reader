@@ -1,31 +1,40 @@
 {{#each library}}
 {{#with data}}
-<h3>{{title}}</h3>
-<p>{{summary}}</p>
 
-<img src="{{../serverPath}}/cover.png" alt="{{title}} cover">
+<div class="library-item" id="library-{{@key}}">
+  <h3>{{title}}</h3>
+  <p>{{summary}}</p>
+  
+  <img src="{{../serverPath}}/cover.png" alt="{{title}} cover">
+  
+  <div>version: {{version}}</div>
+  <div>published: {{publish_date}}</div>
+  <div>orientation: {{config.orientation}}</div>
+  
+  {{#if creators}}
+  <h4>Creators</h4>
+  <dl>
+    {{#each creators}}
+    <dt>{{name}}</dt>
+      <dd>{{role}}</dd>
+    {{/each}}
+  </dl>
+  {{/if}}
+  
+  <a href="{{../serverPath}}">View comic</a>
+  {{#if ../../internal}}
+  <button class="open-ext" data-id="{{@key}}">View in browser</button>
+  <button class="open-folder" data-id="{{@key}}">View folder</button>
+  <button class="remove-entry" data-id="{{@key}}">Remove entry</button>
+  {{/if}}
+</div>
 
-<div>version: {{version}}</div>
-<div>published: {{publish_date}}</div>
-<div>orientation: {{config.orientation}}</div>
-
-{{#if creators}}
-<h4>Creators</h4>
-<dl>
-  {{#each creators}}
-  <dt>{{name}}</dt>
-    <dd>{{role}}</dd>
-  {{/each}}
-</dl>
-{{/if}}
-
-<a href="{{../serverPath}}">View comic</a>
-{{#if ../../internal}}
-<button class="open-ext" data-id="{{@key}}">View in browser</button>
-<button class="open-folder" data-id="{{@key}}">View folder</button>
-{{/if}}
 {{/with}}
 {{/each}}
+
+<div class="dialog" id="dialog-remove-entry" title="Remove this comic?">
+  <p>Are you sure you want to close this project without saving it first?</p>
+</div>
 
 
 <script>
@@ -37,11 +46,40 @@ $('.open-ext').on('click', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   sendMessage('open-ext', { id: id });
-})
+});
 
 $('.open-folder').on('click', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   sendMessage('open-folder', { id: id });
-})
+});
+
+var dialogRemoveEntry = function(id) {
+  var confirm = $('#dialog-remove-entry').dialog({
+    resizable: false,
+    modal: true,
+    width: 550,
+    buttons: {
+      'Yes remove': function() {
+        sendMessage('remove-entry', { id: id });
+        $('#library-' + id).remove();
+        $(this).dialog('close');
+      },
+      'No don\'t remove': function() {
+        $(this).dialog('close');
+      },
+      'Cancel': function() {
+        $(this).dialog('close');
+      }
+    }
+  });
+  confirm.html('<p>Are you sure you want to remove this comic? (Its files will <strong>not</strong> be deleted from your computer)</p>');
+  confirm.dialog('open');
+};
+
+$('.remove-entry').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  dialogRemoveEntry(id);
+});
 </script>

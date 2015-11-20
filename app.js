@@ -426,6 +426,24 @@ var openFolder = function(id) {
 };
 
 
+/*
+ * Remove entry (but not its files) from the library
+ * @param {string} id - comic id
+ */
+removeEntry = function(id) {
+  if (!projects[id]) {
+    return false;
+  }
+  var fsPath = projects[id].fsPath;
+  var i = library.indexOf(fsPath);
+  if (i !== -1) {
+    library.splice(i, 1);
+    localStorage.setItem('library', JSON.stringify(library));
+  }
+  delete [projects[id]];
+};
+
+
 // Listener for the postMessages from the iframes
 window.addEventListener('message', function(e) {
   // check that that the messages come from our local server
@@ -463,6 +481,10 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'open-folder') {
     openFolder(msg.id);
+  }
+
+  if (msg.type === 'remove-entry') {
+    removeEntry(msg.id);
   }
 }, false);
 

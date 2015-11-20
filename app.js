@@ -100,6 +100,8 @@ var projectExtReg = new RegExp(projectExt + '$', 'i');
 var comics = {};
 var library = [];
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">NAV</ec-webreader-nav>';
+var $mainFrame = $('#main-iframe');
+var iframeWin = $mainFrame.get(0).contentWindow;
 
 
 /**
@@ -109,7 +111,7 @@ var serverStart = function() {
   //check if server is already running
   http.get(options, function() {
     console.log('server is already running');
-    $mainFrame.attr('src', serverUrl + '/home');
+    init();
   }).on('error', function() {
     //server is not yet running
 
@@ -358,7 +360,7 @@ var sendMessage = function(type, obj) {
     type: type
   };
   $.extend(msg, obj);
-  $mainFrame.get(0).contentWindow.postMessage(JSON.stringify(msg), serverUrl);
+  iframeWin.postMessage(JSON.stringify(msg), serverUrl);
 };
 
 
@@ -434,7 +436,7 @@ var openFolder = function(id) {
  * Remove entry (but not its files) from the library
  * @param {string} id - comic id
  */
-removeEntry = function(id) {
+var removeEntry = function(id) {
   if (!projects[id]) {
     return false;
   }
@@ -495,34 +497,35 @@ window.addEventListener('message', function(e) {
 
 
 // UI
-// var $quit = $('#quit');
-var $mainFrame = $('#main-iframe');
 
 
-// $quit.on('click', function() {
-//   var confirm = $('#dialog-close-app').dialog({
-//     resizable: false,
-//     modal: true,
-//     width: 550,
-//     buttons: {
-//       'Quit': function() {
-//         $(this).dialog('close');
-//         win.close();
-//       },
-//       Cancel: function() {
-//         $(this).dialog('close');
-//         return;
-//       }
-//     }
-//   });
-//   confirm.dialog('open');
-// });
 
-// use the close event to catch every type of closing, not only the one from our
-// top menu (e.g. keyboard shortcut close)
+/**
+ * Confirm before closing the app
+ */
+var dialogClose = function() {
+  var confirm = $('#dialog-close-app').dialog({
+    resizable: false,
+    modal: true,
+    width: 550,
+    buttons: {
+      'Quit': function() {
+        $(this).dialog('close');
+        win.hide();
+        win.close(true);
+      },
+      Cancel: function() {
+        $(this).dialog('close');
+        return;
+      }
+    }
+  });
+  confirm.dialog('open');
+};
+
+// use the close event to catch every type of closing
 win.on('close', function() {
-  this.hide(); // Pretend to be closed already
-  this.close(true);
+  dialogClose();
 });
 
 

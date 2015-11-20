@@ -5,33 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electricomics Web Reader</title>
   <link rel="stylesheet" href="public/js/lib/jquery-ui/jquery-ui.min.css">
-  <style>
-*, *:before, *:after {
-  -webkit-box-sizing: border-box;
-     -moz-box-sizing: border-box;
-          box-sizing: border-box;
-}
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-.iframe-wrapper {
-  background: #333;
-  height: 100%;
-  position: relative;
-}
-.iframe {
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-.dialog {
-  display: none;
-}
-  </style>
+  <link rel="stylesheet" href="public/css/style.css">
 </head>
-<body>
+<body class="splash-screen">
   <main class="iframe-wrapper">
     <iframe id="main-iframe" class="iframe" src="public/empty.html" frameborder="0" nwdisable nwUserAgent="elcx-web-reader"></iframe>
   </main>

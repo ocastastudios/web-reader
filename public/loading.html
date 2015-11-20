@@ -2,20 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title></title>
-  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-SPLASHSCREEN!!
-  
 <script>
 window.addEventListener('message', function(e) {
   if (e.origin !== 'file://') {
     return false;
   }
-
   var msg;
   try {
     msg = JSON.parse(e.data);
@@ -23,7 +17,6 @@ window.addEventListener('message', function(e) {
   catch(err) {
     return false;
   }
-
   if (msg.type === 'start') {
     window.location = '/home';
   }

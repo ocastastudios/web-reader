@@ -11,6 +11,9 @@ li {
   margin: 0;
   padding: 0;
 }
+html, body {
+  height: 100%;
+}
 header,
 nav,
 details,
@@ -22,8 +25,8 @@ li {
 }
 
 body {
-  background: #333;
-  color: #EEE;
+  background: #000;
+  color: #FFF;
 }
 body, input, textarea, select, button {
   font-family: 'muli', Arial, sans-serif;
@@ -31,6 +34,28 @@ body, input, textarea, select, button {
 
 input[type=file] {
   /*display: none;*/
+}
+
+.splash-screen {
+  background: #000 url(../images/splash.png) no-repeat scroll center center;
+  background-size: 50%;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .splash-screen {
+    background-image: url(../images/splash@2x.png);
+  }
+}
+
+.iframe-wrapper {
+  height: 100%;
+  position: relative;
+}
+.iframe {
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  transition: opacity 1s;
 }
 
 .dialog,

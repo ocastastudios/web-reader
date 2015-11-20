@@ -130,12 +130,7 @@ var serverStart = function() {
 
     server = http.createServer(app);
     server.listen(options.port, function() {
-      $mainFrame.attr('src', serverUrl + '/loading.html');
-      loadIntComics();
-      loadExtComics();
-      $mainFrame.load(function() {
-        sendMessage('start');
-      });
+      init();
     });
 
     server.on('connection', function (socket) {
@@ -457,7 +452,18 @@ win.on('close', function() {
 });
 
 
-
+/**
+ * Start and show
+ */
+var init = function() {
+  $mainFrame.attr('src', serverUrl + '/loading.html');
+  loadIntComics();
+  loadExtComics();
+  $mainFrame.load(function() {
+    $mainFrame.css('opacity', '1');
+    sendMessage('start');
+  });
+};
 
 
 serverStart();

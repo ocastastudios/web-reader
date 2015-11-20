@@ -13,6 +13,7 @@
     "nw.js": "0.12.3"
   },
   "dependencies": {
+    "connect-inject": "^0.4.0",
     "decompress-zip": "^0.2.0",
     "download": "^4.4.1",
     "express": "^4.12.0",

@@ -43,6 +43,7 @@ var exphbs = require('express-handlebars');
 var Download = require('download');
 var DecompressZip = require('decompress-zip');
 var request = require('request');
+var connectInject = require('connect-inject');
 
 // settings
 var options = {
@@ -98,6 +99,7 @@ var projectExt = '.elcx';
 var projectExtReg = new RegExp(projectExt + '$', 'i');
 var comics = {};
 var library = [];
+var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">NAV</ec-webreader-nav>';
 
 
 /**
@@ -197,6 +199,7 @@ var addComicInt = function(fsPath) {
     name: id,
     data: comicData
   };
+  app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
   app.use(serverPath, express.static(fsPath));
 };
 
@@ -262,6 +265,7 @@ var addComicFolder = function(fsPath) {
     name: name,
     data: comicData
   };
+  app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
   app.use(serverPath, express.static(fsPath));
   library.push(fsPath);
   localStorage.setItem('library', JSON.stringify(library));

@@ -390,6 +390,42 @@ var downloadStatus = function(res, url, cb) {
 };
 
 
+/*
+ * Open internal comic in external browser
+ * @param {string} id - comic id
+ */
+var openInt = function(id) {
+  if (!comics[id]) {
+    return false;
+  }
+  nwgui.Shell.openExternal(serverUrl + comics[id].serverPath);
+};
+
+
+/*
+ * Open library comic in external browser
+ * @param {string} id - comic id
+ */
+var openExt = function(id) {
+  if (!projects[id]) {
+    return false;
+  }
+  nwgui.Shell.openExternal(serverUrl + projects[id].serverPath);
+};
+
+
+/*
+ * Open comic folder in the system finder
+ * @param {string} id - comic id
+ */
+var openFolder = function(id) {
+  if (!projects[id]) {
+    return false;
+  }
+  nwgui.Shell.showItemInFolder(path.join(projects[id].fsPath, 'index.html'));
+};
+
+
 // Listener for the postMessages from the iframes
 window.addEventListener('message', function(e) {
   // check that that the messages come from our local server
@@ -415,6 +451,18 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'url') {
     addComicUrl(msg.url, msg.path);
+  }
+
+  if (msg.type === 'open-int') {
+    openInt(msg.id);
+  }
+
+  if (msg.type === 'open-ext') {
+    openExt(msg.id);
+  }
+
+  if (msg.type === 'open-folder') {
+    openFolder(msg.id);
   }
 }, false);
 

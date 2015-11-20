@@ -20,6 +20,10 @@
 {{/if}}
 
 <a href="{{../serverPath}}">View comic</a>
+{{#if ../../internal}}
+<button class="open-ext" data-id="{{@key}}">View in browser</button>
+<button class="open-folder" data-id="{{@key}}">View folder</button>
+{{/if}}
 {{/with}}
 {{/each}}
 
@@ -28,4 +32,16 @@
 var loadLibraryItem = function(item) {
   console.log(item);
 };
+
+$('.open-ext').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  sendMessage('open-ext', { id: id });
+})
+
+$('.open-folder').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  sendMessage('open-folder', { id: id });
+})
 </script>

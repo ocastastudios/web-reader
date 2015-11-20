@@ -20,5 +20,16 @@
 {{/if}}
 
 <a href="/{{slug}}/">View comic</a>
+{{#if ../../internal}}
+<button class="open-int" data-id="{{@key}}">View in browser</button>
+{{/if}}
 {{/with}}
 {{/each}}
+
+<script>
+$('.open-int').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  sendMessage('open-int', { id: id });
+})
+</script>

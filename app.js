@@ -42,14 +42,15 @@ var fs = require('fs');
 var exphbs = require('express-handlebars');
 var Download = require('download');
 var DecompressZip = require('decompress-zip');
-var request = require('request');
 var connectInject = require('connect-inject');
 var checksum = require('checksum');
 var osenv = require('osenv');
 var Q = require('q');
 var mv = require('mv');
+var archiver = require('archiver');
 
 // settings
+// the port will be in an advanded setting panel to avoid collision with existent servers
 var options = {
   host: '127.0.0.1',
   port: 8123
@@ -86,17 +87,8 @@ try {
 //   }
 // });
 
-// address of the created server
-// the port will be in an advanded setting panel to avoid collision with existent servers
 var serverUrl = 'http://' + options.host + ':' + options.port;
 
-// what do we save in local memory for each project?
-// id is a unique for the session identifier, formed of:
-// a counter, increased for every open project in the session
-// plus the name of the open project.
-// with session we mean the time during which the app is open.
-// when the app is closed and reopen the session restart, so does the counter
-// projects[id] = { fsPath, serverPath, name, data }
 var projects = {};
 var projectsCounter = 0;
 var projectExt = '.elcx';
@@ -226,30 +218,22 @@ var loadExtComics = function() {
   localStorage.setItem('library', JSON.stringify(library));
   for (var i = 0; i < localComics.length; i++) {
     fsPath = localComics[i];
-    addComicFolder(fsPath);
+    readComicFolder(fsPath);
   }
 };
 
 
 /**
- * Add comic from folder
+ * Read comic from folder
  * @param {string} fsPath - Filesystem path of the folder
  * @returns {boolean} true if import was successful
  */
-var addComicFolder = function(fsPath) {
+var readComicFolder = function(fsPath) {
   var comicJson = path.join(fsPath, 'comic.json');
   var comicData;
 
-  if (library.indexOf(fsPath) !== -1) {
-    sendMessage('error', { message: 'Comic in folder <em>' + fsPath + '</em> is already loaded.' });
-    return false;
-  }
-  if (!exists(fsPath)) {
-    sendMessage('error', { message: 'Folder <em>' + fsPath + '</em> not found.' });
-    return false;
-  }
   if (!exists(comicJson)) {
-    sendMessage('error', { message: 'Folder <em>' + comicJson + '</em> not found.' });
+    sendMessage('error', { message: 'File <em>' + comicJson + '</em> not found.' });
     return false;
   }
   try {
@@ -274,40 +258,35 @@ var addComicFolder = function(fsPath) {
   app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
   app.use(serverPath, express.static(fsPath));
   library.push(fsPath);
-  localStorage.setItem('library', JSON.stringify(library));
   return true;
 };
 
 
 /**
- * Add comic from archive file
- * @param {string} fsPath - Filesystem path of the archive
+ * Zip folder
+ * @param {string} source - Filesystem path of the folder
+ * @param {string} dest - Filesystem path of the archive, its name included
+ * @returns {string} Filesystem path of the archive, its name included
  */
-var addComicArchive = function(fsPath) {
-  if (!projectExtReg.test(fsPath)) {
-    sendMessage('error', { message: 'File must be an <em>.elcx</em> archive.' });
-    return false;
-  }
-  var dest = fsPath.replace(projectExtReg, '');
-  var unzipper = new DecompressZip(fsPath);
+var zipFolder = function(source, dest) {
+  var deferred = Q.defer();
 
-  unzipper.on('error', function(err) {
-    sendMessage('error', { message: 'Impossible to extract file <em>' + fsPath + '</em>.<br>Error: <pre>' + err + '</pre>' });
+  var output = fs.createWriteStream(dest);
+  var zipArchive = archiver('zip');
+  output.on('close', function() {
+    deferred.resolve(dest);
   });
-
-  unzipper.on('extract', function() {
-    addComicFolder(dest);
-  });
-
-  // unzipper.on('progress', function(index, count) {
-  // });
-
-  unzipper.extract({
-    path: dest,
-    filter: function(file) {
-      return file.type !== 'SymbolicLink';
+  zipArchive.pipe(output);
+  zipArchive.bulk([
+    { src: [ '**/*' ], cwd: source, expand: true }
+  ]);
+  zipArchive.finalize(function(err) {
+    if (err) {
+      deferred.reject(err);
     }
   });
+
+  return deferred.promise;
 };
 
 
@@ -342,25 +321,6 @@ var unzipFile = function(archive, dest) {
   return deferred.promise;
 };
 
-/**
- * Resolve url
- * We have to expand the url to get the proper final file name
- * Example from http://www.2ality.com/2012/04/expand-urls.html 
- * @param {string} url - URL to download
- * @returns {string} Resolved url
- */
-var resolveUrl = function(url) {
-  var deferred = Q.defer();
-  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      deferred.resolve(response.request.href);
-    }
-  });
-  return deferred.promise;
-};
 
 /**
  * Download file
@@ -442,33 +402,6 @@ var moveFolder = function(source, dest) {
     }
   });
   return deferred.promise;
-};
-
-
-/**
- * Add comic from remote url
- * We have to expand the url to get the proper final file name
- * Example from http://www.2ality.com/2012/04/expand-urls.html 
- * @param {string} url - http/https url to download the archive from
- * @param {string} dest - Filesystem path where do download and extract the archive
- */
-var addComicUrl = function(url, dest) {
-  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
-    if (err) {
-      sendMessage('error', { message: 'Impossible to download from <em>' + url + '</em>.<br>Error: <pre>' + err + '</pre>' });
-      return false;
-    }
-    var longUrl = response.request.href;
-    new Download().get(longUrl).dest(dest).use(downloadStatus).run(function(err, files) {
-      if (err) {
-        sendMessage('error', { message: 'Impossible to download from <em>' + longUrl + '</em>.<br>Error: <pre>' + err + '</pre>' });
-        return false;
-      }
-      for (var i = 0; i < files.length; i++) {
-        addComicArchive(path.join(files[i].history[1]));
-      }
-    });
-  });
 };
 
 
@@ -589,53 +522,71 @@ var removeEntry = function(id) {
 
 
 var HOME_DIR = osenv.home();
-var TMP_DIR = osenv.tmpdir();
+// var TMP_DIR = osenv.tmpdir();
+var TMP_DIR = '/Users/electric_g/Desktop/';
 var LIB_DIR = path.join(HOME_DIR, 'Electricomics Library');
+
+
 /**
  * Import comic from url
  * @param {string} url - URL to download
  */
-var myPromise = function(url) {
+var pAddComicUrl = function(url) {
   var tmpName = Date.now() + '';
-  // var tmpPath = path.join(TMP_DIR, tmpName);
-  var opts = {};
-  opts.destinationFolder = '/Users/electric_g/Desktop/';
-  opts.url = url || 'http://j.mp/elcx-traume';
-  opts.newName = tmpName + projectExt;
-  
-  // return resolveUrl(opts.url)
-  // // donwload file
-  //   .then(function(res) {
-  //     opts.resolvedUrl = res;
-  //     return downloadFile(opts.resolvedUrl, opts.destinationFolder, opts.newName);
-  //   })
-  return downloadFile(opts.url, opts.destinationFolder, opts.newName)
+  var newName = tmpName + projectExt;
+
+  return downloadFile(url, TMP_DIR, newName)
+    .then(pAddComicArchive);
+};
+
+
+/**
+ * Import comic from local folder
+ * @param {string} fsPath - Filesystem path of the folder
+ */
+var pAddComicFolder = function(fsPath) {
+  var tmpName = Date.now() + '';
+  var newName = tmpName + projectExt;
+  var tmpPath = path.join(TMP_DIR, newName);
+
+  return zipFolder(fsPath, tmpPath)
+    .then(pAddComicArchive);
+};
+
+
+/**
+ * Import comic from local archive
+ * @param {string} archive - Filesystem path of the archive
+ */
+var pAddComicArchive = function(archive) {
+  var tmpName = Date.now() + '';
+  var tmpPath = path.join(TMP_DIR, tmpName);
+  var checksum;
+  var comicJson;
+  var slug;
+
   // checksum file
+  return checksumFile(archive)
+  // unzip file in tmp dir
     .then(function(res) {
-      opts.donwloadedFile = res;
-      return checksumFile(res);
-    })
-  // unzip tile
-    .then(function(res) {
-      opts.checksum = res;
-      return unzipFile(opts.donwloadedFile, path.join(opts.destinationFolder, tmpName));
+      checksum = res;
+      return unzipFile(archive, tmpPath);
     })
   // read comic.json
-    .then(function(res) {
-      opts.extractedFolder = res;
-      return readComicJson(opts.extractedFolder);
+    .then(function() {
+      return readComicJson(tmpPath);
     })
-  // create slug and move folder
+  // create slug and move folder in library
     .then(function(res) {
-      opts.comicJson = res;
-      opts.slug = opts.comicJson.title + '-' + tmpName;
-      return moveFolder(opts.extractedFolder, path.join(LIB_DIR, opts.slug));
+      comicJson = res;
+      slug = comicJson.title + '_' + checksum;
+      return moveFolder(tmpPath, path.join(LIB_DIR, slug));
     })
-  // print results
+  // add entry
     .then(function(res) {
-      opts.folder = res;
-      console.log(opts);
+      console.log(res, comicJson);
     }, function(err) {
+      // TODO delete tmp files and folders
       console.log('error!');
       console.error(err);
     });
@@ -658,15 +609,15 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'local-folder') {
-    addComicFolder(msg.path);
+    pAddComicFolder(msg.path);
   }
 
   if (msg.type === 'local-archive') {
-    addComicArchive(msg.path);
+    pAddComicArchive(msg.path);
   }
 
   if (msg.type === 'url') {
-    addComicUrl(msg.url, msg.path);
+    pAddComicUrl(msg.url);
   }
 
   if (msg.type === 'open-int') {

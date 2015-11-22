@@ -44,6 +44,10 @@ var Download = require('download');
 var DecompressZip = require('decompress-zip');
 var request = require('request');
 var connectInject = require('connect-inject');
+var checksum = require('checksum');
+var osenv = require('osenv');
+var Q = require('q');
+var mv = require('mv');
 
 // settings
 var options = {
@@ -308,11 +312,145 @@ var addComicArchive = function(fsPath) {
 
 
 /**
+ * Unzip file
+ * @param {string} archive - Filesystem path of the file
+ * @param {string} dest - Filesystem path where to extract files
+ * @returns {string} Filesystem path of the extracted files
+ */
+var unzipFile = function(archive, dest) {
+  var deferred = Q.defer();
+  var unzipper = new DecompressZip(archive);
+
+  unzipper.on('error', function(err) {
+    deferred.reject(err);
+  });
+
+  unzipper.on('extract', function() {
+    deferred.resolve(dest);
+  });
+
+  // unzipper.on('progress', function(index, count) {
+  // });
+
+  unzipper.extract({
+    path: dest,
+    filter: function(file) {
+      return file.type !== 'SymbolicLink';
+    }
+  });
+
+  return deferred.promise;
+};
+
+/**
+ * Resolve url
+ * We have to expand the url to get the proper final file name
+ * Example from http://www.2ality.com/2012/04/expand-urls.html 
+ * @param {string} url - URL to download
+ * @returns {string} Resolved url
+ */
+var resolveUrl = function(url) {
+  var deferred = Q.defer();
+  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      deferred.resolve(response.request.href);
+    }
+  });
+  return deferred.promise;
+};
+
+/**
+ * Download file
+ * @param {string} url - URL to download
+ * @param {string} dest - Destination folder
+ * @param {string} newName - Rename file to this
+ * @returns {string} Filesystem path of the downloaded file
+ */
+var downloadFile = function(url, dest, newName) {
+  var deferred = Q.defer();
+  var rename = function(name) {
+    if (newName != null && newName !== '') {
+      return newName;
+    }
+    else {
+      return name;
+    }
+  };
+  new Download().get(url).dest(dest).rename(rename(name)).use(downloadStatus).run(function(err, files) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      deferred.resolve(files[0].history[2]);
+    }
+  });
+  return deferred.promise;
+};
+
+/**
+ * Create sha1 checksum of the file
+ * @param {string} file - Filesystem path of the file
+ * @returns {string} checksum
+ */
+var checksumFile = Q.denodeify(checksum.file);
+
+/**
+ * Read comic.json file
+ * @param {string} fsPath - Filesystem path of the folder where the file is
+ * @returns {object} content in json format of the file
+ */
+var readComicJson = function(fsPath) {
+  var file = path.join(fsPath, 'comic.json');
+  var deferred = Q.defer();
+  var obj;
+  fs.readFile(file, function (err, data) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      try {
+        obj = JSON.parse(data);
+         deferred.resolve(obj);
+      }
+      catch(e) {
+        deferred.reject(e);
+      }
+    }
+  });
+  return deferred.promise;
+};
+
+/**
+ * Move and rename folder
+ * @param {string} source - Filesystem path of the folder to move
+ * @param {string} dest - Filesystem path where to move the folder to
+ * @returns {string} Filesystem path of the destination
+ */
+var moveFolder = function(source, dest) {
+  var deferred = Q.defer();
+  // mkdirp: creates all the necessary directories
+  // clobber: if dest exists, an error is returned
+  mv(source, dest, { mkdirp: true, clobber: false }, function(err) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      deferred.resolve(dest);
+    }
+  });
+  return deferred.promise;
+};
+
+
+/**
  * Add comic from remote url
  * We have to expand the url to get the proper final file name
  * Example from http://www.2ality.com/2012/04/expand-urls.html 
  * @param {string} url - http/https url to download the archive from
- * @param {string} fsPath - Filesystem path where do download and extract the archive
+ * @param {string} dest - Filesystem path where do download and extract the archive
  */
 var addComicUrl = function(url, dest) {
   request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
@@ -334,7 +472,7 @@ var addComicUrl = function(url, dest) {
 };
 
 
-/*
+/**
  * Check if file or directory exists
  * @param {string} fsPath - Path in the filesystem to test
  * @returns {boolean} true if it exists
@@ -396,7 +534,7 @@ var downloadStatus = function(res, url, cb) {
 };
 
 
-/*
+/**
  * Open internal comic in external browser
  * @param {string} id - comic id
  */
@@ -408,7 +546,7 @@ var openInt = function(id) {
 };
 
 
-/*
+/**
  * Open library comic in external browser
  * @param {string} id - comic id
  */
@@ -420,7 +558,7 @@ var openExt = function(id) {
 };
 
 
-/*
+/**
  * Open comic folder in the system finder
  * @param {string} id - comic id
  */
@@ -432,7 +570,7 @@ var openFolder = function(id) {
 };
 
 
-/*
+/**
  * Remove entry (but not its files) from the library
  * @param {string} id - comic id
  */
@@ -447,6 +585,60 @@ var removeEntry = function(id) {
     localStorage.setItem('library', JSON.stringify(library));
   }
   delete [projects[id]];
+};
+
+
+var HOME_DIR = osenv.home();
+var TMP_DIR = osenv.tmpdir();
+var LIB_DIR = path.join(HOME_DIR, 'Electricomics Library');
+/**
+ * Import comic from url
+ * @param {string} url - URL to download
+ */
+var myPromise = function(url) {
+  var tmpName = Date.now() + '';
+  // var tmpPath = path.join(TMP_DIR, tmpName);
+  var opts = {};
+  opts.destinationFolder = '/Users/electric_g/Desktop/';
+  opts.url = url || 'http://j.mp/elcx-traume';
+  opts.newName = tmpName + projectExt;
+  
+  // return resolveUrl(opts.url)
+  // // donwload file
+  //   .then(function(res) {
+  //     opts.resolvedUrl = res;
+  //     return downloadFile(opts.resolvedUrl, opts.destinationFolder, opts.newName);
+  //   })
+  return downloadFile(opts.url, opts.destinationFolder, opts.newName)
+  // checksum file
+    .then(function(res) {
+      opts.donwloadedFile = res;
+      return checksumFile(res);
+    })
+  // unzip tile
+    .then(function(res) {
+      opts.checksum = res;
+      return unzipFile(opts.donwloadedFile, path.join(opts.destinationFolder, tmpName));
+    })
+  // read comic.json
+    .then(function(res) {
+      opts.extractedFolder = res;
+      return readComicJson(opts.extractedFolder);
+    })
+  // create slug and move folder
+    .then(function(res) {
+      opts.comicJson = res;
+      opts.slug = opts.comicJson.title + '-' + tmpName;
+      return moveFolder(opts.extractedFolder, path.join(LIB_DIR, opts.slug));
+    })
+  // print results
+    .then(function(res) {
+      opts.folder = res;
+      console.log(opts);
+    }, function(err) {
+      console.log('error!');
+      console.error(err);
+    });
 };
 
 

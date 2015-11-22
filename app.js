@@ -50,11 +50,18 @@ var mv = require('mv');
 var archiver = require('archiver');
 
 // settings
-// the port will be in an advanded setting panel to avoid collision with existent servers
+// they may end up in the advanced setting panel
 var options = {
   host: '127.0.0.1',
-  port: 8123
+  port: 8123,
+  dir: 'Electricomics Library',
+  ext: '.elcx'
 };
+
+var HOME_DIR = osenv.home();
+// var TMP_DIR = osenv.tmpdir();
+var TMP_DIR = '/Users/electric_g/Desktop/';
+var LIB_DIR = path.join(HOME_DIR, options.dir);
 
 // server stuff
 var server;
@@ -88,13 +95,9 @@ try {
 // });
 
 var serverUrl = 'http://' + options.host + ':' + options.port;
-
 var projects = {};
-var projectsCounter = 0;
-var projectExt = '.elcx';
-var projectExtReg = new RegExp(projectExt + '$', 'i');
+var projectExt = options.ext;
 var comics = {};
-var library = [];
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">NAV</ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
@@ -164,7 +167,7 @@ var loadIntComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    addComicInt(fsPath);
+    readComicInt(fsPath, comicsDir[i]);
   }
 };
 
@@ -172,33 +175,14 @@ var loadIntComics = function() {
 /**
  * Add comic from the proprietary folder in the app
  * @param {string} fsPath - Filesystem path of the archive
- * @returns {boolean} true if import was successful
+ * @param {string} folder - Folder name
  */
-var addComicInt = function(fsPath) {
-  var comicJson = path.join(fsPath, 'comic.json');
-  var comicData;
-  
-  if (!exists(comicJson)) {
-    return false;
-  }
-  try {
-    comicData = JSON.parse(fs.readFileSync(comicJson));
-  }
-  catch(e) {
-    return false;
-  }
-
-  var id = comicData.slug;
-  var serverPath = '/' + id;
-  
-  comics[id] = {
-    fsPath: fsPath,
-    serverPath: serverPath,
-    name: id,
-    data: comicData
-  };
-  app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
-  app.use(serverPath, express.static(fsPath));
+var readComicInt = function(fsPath, folder) {
+  return readComicJson(fsPath)
+    .then(function(res) {
+      var entry = addEntry(res, fsPath, folder);
+      comics[entry.id] = entry.o;
+    });
 };
 
 
@@ -206,19 +190,18 @@ var addComicInt = function(fsPath) {
  * Load all external comics
  */
 var loadExtComics = function() {
-  var localComics;
+  var comicsPath = LIB_DIR;
+
+  if (!exists(comicsPath)) {
+    return false;
+  }
+  
+  var comicsDir = fs.readdirSync(comicsPath);
   var fsPath;
 
-  try {
-    localComics = JSON.parse(localStorage.getItem('library')) || [];
-  }
-  catch (e) {
-    localComics = [];
-  }
-  localStorage.setItem('library', JSON.stringify(library));
-  for (var i = 0; i < localComics.length; i++) {
-    fsPath = localComics[i];
-    readComicFolder(fsPath);
+  for (var i = 0; i < comicsDir.length; i++) {
+    fsPath = path.join(comicsPath, comicsDir[i]);
+    readComicFolder(fsPath, comicsDir[i]);
   }
 };
 
@@ -226,39 +209,37 @@ var loadExtComics = function() {
 /**
  * Read comic from folder
  * @param {string} fsPath - Filesystem path of the folder
- * @returns {boolean} true if import was successful
+ * @param {string} folder - Folder name
  */
-var readComicFolder = function(fsPath) {
-  var comicJson = path.join(fsPath, 'comic.json');
-  var comicData;
+var readComicFolder = function(fsPath, folder) {
+  return readComicJson(fsPath)
+    .then(function(res) {
+      var entry = addEntry(res, fsPath, folder);
+      projects[entry.id] = entry.o;
+    });
+};
 
-  if (!exists(comicJson)) {
-    sendMessage('error', { message: 'File <em>' + comicJson + '</em> not found.' });
-    return false;
-  }
-  try {
-    comicData = JSON.parse(fs.readFileSync(comicJson));
-  }
-  catch(e) {
-    sendMessage('error', { message: 'Impossible to read file <em>' + comicJson + '</em>.' });
-    return false;
-  }
 
-  projectsCounter++;
-  var name = 'ext';
-  var id = projectsCounter + '-' + name;
+/**
+ * Add entry
+ * @param {object} comicData - JSON comic data
+ * @param {string} fsPath - Filesystem path of the comic folder
+ * @param {string} folder - Name of the comic folder
+ * @returns {string} Name of the comic folder
+ */
+var addEntry = function(comicData, fsPath, folder) {
+  var id = folder;
   var serverPath = '/' + id;
   
-  projects[id] = {
+  var obj = {
     fsPath: fsPath,
     serverPath: serverPath,
-    name: name,
+    name: id,
     data: comicData
   };
   app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
   app.use(serverPath, express.static(fsPath));
-  library.push(fsPath);
-  return true;
+  return { id: id, o: obj };
 };
 
 
@@ -350,12 +331,14 @@ var downloadFile = function(url, dest, newName) {
   return deferred.promise;
 };
 
+
 /**
  * Create sha1 checksum of the file
  * @param {string} file - Filesystem path of the file
  * @returns {string} checksum
  */
 var checksumFile = Q.denodeify(checksum.file);
+
 
 /**
  * Read comic.json file
@@ -382,6 +365,7 @@ var readComicJson = function(fsPath) {
   });
   return deferred.promise;
 };
+
 
 /**
  * Move and rename folder
@@ -504,27 +488,16 @@ var openFolder = function(id) {
 
 
 /**
- * Remove entry (but not its files) from the library
+ * Remove entry and its files from the library
  * @param {string} id - comic id
  */
 var removeEntry = function(id) {
   if (!projects[id]) {
     return false;
   }
-  var fsPath = projects[id].fsPath;
-  var i = library.indexOf(fsPath);
-  if (i !== -1) {
-    library.splice(i, 1);
-    localStorage.setItem('library', JSON.stringify(library));
-  }
   delete [projects[id]];
+  // TODO delete files
 };
-
-
-var HOME_DIR = osenv.home();
-// var TMP_DIR = osenv.tmpdir();
-var TMP_DIR = '/Users/electric_g/Desktop/';
-var LIB_DIR = path.join(HOME_DIR, 'Electricomics Library');
 
 
 /**
@@ -583,8 +556,10 @@ var pAddComicArchive = function(archive) {
       return moveFolder(tmpPath, path.join(LIB_DIR, slug));
     })
   // add entry
-    .then(function(res) {
-      console.log(res, comicJson);
+    .then(function() {
+      addEntry(comicJson, slug);
+      // TODO load data in UI page
+      // TODO delete tmp files and folders
     }, function(err) {
       // TODO delete tmp files and folders
       console.log('error!');
@@ -638,11 +613,6 @@ window.addEventListener('message', function(e) {
 }, false);
 
 
-
-// UI
-
-
-
 /**
  * Confirm before closing the app
  */
@@ -665,6 +635,7 @@ var dialogClose = function() {
   });
   confirm.dialog('open');
 };
+
 
 // use the close event to catch every type of closing
 win.on('close', function() {

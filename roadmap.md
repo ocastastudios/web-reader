@@ -16,3 +16,5 @@
 * [ ] add loading screen when adding comic
 * [x] add splash screen
 * [ ] fix tilt for Sway
+* [ ] something that shows or interfaces with http://electricomics.net/library/
+* [ ] stop importing comic functionality

@@ -61,7 +61,7 @@ var options = {
 
 var HOME_DIR = osenv.home();
 // var TMP_DIR = osenv.tmpdir();
-var TMP_DIR = '/Users/electric_g/Desktop/';
+var TMP_DIR = path.join(HOME_DIR, 'Desktop');
 var LIB_DIR = path.join(HOME_DIR, options.dir);
 
 // server stuff
@@ -540,6 +540,7 @@ var pAddComicArchive = function(archive) {
   var checksum;
   var comicJson;
   var slug;
+  var fsPath;
 
   // checksum file
   return checksumFile(archive)
@@ -555,12 +556,15 @@ var pAddComicArchive = function(archive) {
   // create slug and move folder in library
     .then(function(res) {
       comicJson = res;
+      // TODO normalize title
       slug = comicJson.title + '_' + checksum;
-      return moveFolder(tmpPath, path.join(LIB_DIR, slug));
+      fsPath = path.join(LIB_DIR, slug);
+      return moveFolder(tmpPath, fsPath);
     })
   // add entry
     .then(function() {
-      addEntry(comicJson, slug);
+      var entry = addEntry(comicJson, fsPath, slug);
+      projects[entry.id] = entry.o;
       // TODO load data in UI page
       // TODO delete tmp files and folders
     }, function(err) {

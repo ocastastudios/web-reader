@@ -8,10 +8,9 @@
 * [ ] add this functionalities to all the comics:
   * [x] view in external browser - only if page is viewed from inside the app
   * [ ] inject js/css/html code for top navigation menu inside the comic index.html
-* [ ] add this functionalities to external comics:
+* [x] add this functionalities to external comics:
   * [x] view folder in finder/explorer - only if page is viewed from inside the app
-  * [x] remove entry (but do not delete files) - only if page is viewed from inside the app
-  * [ ] actually delete files - only if page is viewed from inside the app
+  * [x] remove entry and delete files - only if page is viewed from inside the app
 * [ ] add "about Electricomics" section
 * [x] add progress bar to download
 * [ ] add loading screen when adding comic

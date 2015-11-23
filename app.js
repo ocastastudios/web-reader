@@ -511,8 +511,18 @@ var removeEntry = function(id) {
   if (!projects[id]) {
     return false;
   }
-  delete [projects[id]];
-  // TODO delete files
+  var fsPath = projects[id].fsPath;
+  // delete files
+  rmdir(fsPath, function(err) {
+    if (err) {
+      sendMessage('error', { message: err.message });
+      console.err(err);
+    }
+    else {
+      delete projects[id];
+      sendMessage('deleted', { id: id });
+    }
+  });
 };
 
 

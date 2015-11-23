@@ -62,7 +62,6 @@ var dialogRemoveEntry = function(id) {
     buttons: {
       'Yes remove': function() {
         sendMessage('remove-entry', { id: id });
-        $('#library-' + id).remove();
         $(this).dialog('close');
       },
       'No don\'t remove': function() {
@@ -89,6 +88,10 @@ receiveMessage = function(msg) {
 
   if (msg.type === 'library') {
     loadLibraryItem(msg.item);
+  }
+
+  if (msg.type === 'deleted') {
+    $('#library-' + msg.id).remove();
   }
 };
 </script>

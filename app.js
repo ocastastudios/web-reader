@@ -49,6 +49,7 @@ var Q = require('q');
 var mv = require('mv');
 var archiver = require('archiver');
 var junk = require('junk');
+var S = require('string');
 
 // settings
 // they may end up in the advanced setting panel
@@ -567,7 +568,7 @@ var pAddComicArchive = function(archive) {
     .then(function(res) {
       comicJson = res;
       // TODO normalize title
-      slug = comicJson.title + '_' + checksum;
+      slug = S(comicJson.title).slugify().s + '_' + checksum;
       fsPath = path.join(LIB_DIR, slug);
       return moveFolder(tmpPath, fsPath);
     })

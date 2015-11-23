@@ -102,6 +102,7 @@ var comics = {};
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">NAV</ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
+var promisesLoadComics = [];
 
 
 /**
@@ -169,8 +170,10 @@ var loadIntComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    readComicInt(fsPath, comicsDir[i]);
+    promisesLoadComics.push(readComicInt(fsPath, comicsDir[i]));
+    console.log('after', comicsDir[i]);
   }
+  console.log('ended');
 };
 
 
@@ -184,6 +187,9 @@ var readComicInt = function(fsPath, folder) {
     .then(function(res) {
       var entry = addEntry(res, fsPath, folder);
       comics[entry.id] = entry.o;
+      console.log('entry', entry.id);
+    }, function(err) {
+      console.error(err);
     });
 };
 
@@ -204,8 +210,10 @@ var loadExtComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    readComicFolder(fsPath, comicsDir[i]);
+    promisesLoadComics.push(readComicFolder(fsPath, comicsDir[i]));
+    console.log('after', comicsDir[i]);
   }
+  console.log('ended');
 };
 
 
@@ -219,6 +227,8 @@ var readComicFolder = function(fsPath, folder) {
     .then(function(res) {
       var entry = addEntry(res, fsPath, folder);
       projects[entry.id] = entry.o;
+    }, function(err) {
+      console.error(err);
     });
 };
 
@@ -657,10 +667,14 @@ var init = function() {
   $mainFrame.attr('src', serverUrl + '/loading.html');
   loadIntComics();
   loadExtComics();
-  $mainFrame.load(function() {
-    $mainFrame.css('opacity', '1');
-    sendMessage('start');
-  });
+  return Q.all(promisesLoadComics)
+    .then(function() {
+      console.log('all promises');
+      $mainFrame.load(function() {
+        $mainFrame.css('opacity', '1');
+        sendMessage('start');
+      });
+    });
 };
 
 

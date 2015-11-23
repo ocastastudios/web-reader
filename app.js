@@ -48,6 +48,7 @@ var osenv = require('osenv');
 var Q = require('q');
 var mv = require('mv');
 var archiver = require('archiver');
+var junk = require('junk');
 
 // settings
 // they may end up in the advanced setting panel
@@ -163,6 +164,7 @@ var loadIntComics = function() {
   }
 
   var comicsDir = fs.readdirSync(comicsPath);
+  comicsDir = comicsDir.filter(junk.not);
   var fsPath;
 
   for (var i = 0; i < comicsDir.length; i++) {
@@ -197,6 +199,7 @@ var loadExtComics = function() {
   }
   
   var comicsDir = fs.readdirSync(comicsPath);
+  comicsDir = comicsDir.filter(junk.not);
   var fsPath;
 
   for (var i = 0; i < comicsDir.length; i++) {

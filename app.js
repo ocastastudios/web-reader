@@ -50,6 +50,7 @@ var mv = require('mv');
 var archiver = require('archiver');
 var junk = require('junk');
 var S = require('string');
+var rmdir = require('rmdir');
 
 // settings
 // they may end up in the advanced setting panel
@@ -228,6 +229,7 @@ var readComicFolder = function(fsPath, folder) {
     .then(function(res) {
       var entry = addEntry(res, fsPath, folder);
       projects[entry.id] = entry.o;
+      console.log('entry', entry.id);
     }, function(err) {
       console.error(err);
     });
@@ -546,7 +548,7 @@ var pAddComicFolder = function(fsPath) {
  * @param {string} archive - Filesystem path of the archive
  */
 var pAddComicArchive = function(archive) {
-  var tmpName = Date.now() + '';
+  var tmpName = path.basename(archive, projectExt);
   var tmpPath = path.join(TMP_DIR, tmpName);
   var checksum;
   var comicJson;
@@ -567,7 +569,6 @@ var pAddComicArchive = function(archive) {
   // create slug and move folder in library
     .then(function(res) {
       comicJson = res;
-      // TODO normalize title
       slug = S(comicJson.title).slugify().s + '_' + checksum;
       fsPath = path.join(LIB_DIR, slug);
       return moveFolder(tmpPath, fsPath);
@@ -577,10 +578,18 @@ var pAddComicArchive = function(archive) {
       var entry = addEntry(comicJson, fsPath, slug);
       projects[entry.id] = entry.o;
       // TODO load data in UI page
-      // TODO delete tmp files and folders
+      // delete tmp files
+      rmdir(archive, function() {});
+
     }, function(err) {
-      // TODO delete tmp files and folders
-      console.log('error!');
+      // delete tmp files and folders
+      if (exists(archive)) {
+        rmdir(archive, function() {  });
+      }
+      if (exists(tmpPath)) {
+        rmdir(tmpPath, function() {  });
+      }
+      sendMessage('error', { message: err.message });
       console.error(err);
     });
 };

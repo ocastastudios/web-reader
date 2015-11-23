@@ -17,7 +17,6 @@
   <div>
     <form id="open-remote-form">
       <label for="open-remote-url">Url</label><input type="text" id="open-remote-url" required>
-      <label>Save to<input type="file" id="open-remote-dest" nwdirectory required></label>
       <input type="submit" value="Download">
     </form>
 
@@ -52,13 +51,11 @@ $localArchive.on('change', function() {
 
 var $openRemoteForm = $('#open-remote-form');
 var $openRemoteUrl = $('#open-remote-url');
-var $openRemoteDest = $('#open-remote-dest');
 $openRemoteForm.on('submit', function(e) {
   e.preventDefault();
   var url = $openRemoteUrl.val();
-  var path = $openRemoteDest.get(0).files[0].path;
-  if (url !== '' && path !== '') {
-    sendMessage('url', { url: url, path: path });
+  if (url !== '') {
+    sendMessage('url', { url: url });
     $progressbarUrl.show();
   }
 });

@@ -132,6 +132,17 @@ var serverStart = function() {
       res.render('index', { comics : comics, library: projects, internal: internal });
     });
 
+    app.use('/item', function(req, res) {
+      var id = req.query.id;
+      var library = {};
+      library[id] = projects[id];
+      var internal = false;
+      if (req.headers['user-agent'] === 'elcx-web-reader') {
+        internal = true;
+      }
+      res.render('item', { library: library, internal: internal });
+    });
+
     // all environments
     app.set('port', options.port);
 
@@ -587,7 +598,8 @@ var pAddComicArchive = function(archive) {
     .then(function() {
       var entry = addEntry(comicJson, fsPath, slug);
       projects[entry.id] = entry.o;
-      // TODO load data in UI page
+      // tell to load data in UI page
+      sendMessage('load-item', { id: entry.id });
       // delete tmp files
       rmdir(archive, function() {});
 

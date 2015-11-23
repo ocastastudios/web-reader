@@ -1,36 +1,6 @@
-{{#each library}}
-{{#with data}}
-
-<div class="library-item" id="library-{{@key}}">
-  <h3>{{title}}</h3>
-  <p>{{summary}}</p>
-  
-  <img src="{{../serverPath}}/cover.png" alt="{{title}} cover">
-  
-  <div>version: {{version}}</div>
-  <div>published: {{publish_date}}</div>
-  <div>orientation: {{config.orientation}}</div>
-  
-  {{#if creators}}
-  <h4>Creators</h4>
-  <dl>
-    {{#each creators}}
-    <dt>{{name}}</dt>
-      <dd>{{role}}</dd>
-    {{/each}}
-  </dl>
-  {{/if}}
-  
-  <a href="{{../serverPath}}">View comic</a>
-  {{#if ../../internal}}
-  <button class="open-ext" data-id="{{@key}}">View in browser</button>
-  <button class="open-folder" data-id="{{@key}}">View folder</button>
-  <button class="remove-entry" data-id="{{@key}}">Remove entry</button>
-  {{/if}}
+<div id="library-wrapper">
+  {{>item}}
 </div>
-
-{{/with}}
-{{/each}}
 
 <div class="dialog" id="dialog-remove-entry" title="Remove this comic?">
   <p>Are you sure you want to close this project without saving it first?</p>
@@ -82,6 +52,8 @@ $('.remove-entry').on('click', function(e) {
   dialogRemoveEntry(id);
 });
 
+var $libraryWrapper = $('#library-wrapper');
+
 var libraryReceiveMessage = receiveMessage;
 receiveMessage = function(msg) {
   libraryReceiveMessage(msg);
@@ -92,6 +64,19 @@ receiveMessage = function(msg) {
 
   if (msg.type === 'deleted') {
     $('#library-' + msg.id).remove();
+  }
+
+  if (msg.type === 'load-item') {
+    $.ajax({
+      url: '/item?id=' + msg.id,
+      dataType: 'html',
+      success: function(data) {
+        $libraryWrapper.append(data);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        dialogError(textStatus);
+      }
+    });
   }
 };
 </script>

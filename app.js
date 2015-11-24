@@ -51,6 +51,7 @@ var archiver = require('archiver');
 var junk = require('junk');
 var S = require('string');
 var rmdir = require('rmdir');
+var request = require('request');
 
 // settings
 // they may end up in the advanced setting panel
@@ -322,6 +323,28 @@ var unzipFile = function(archive, dest) {
 
 
 /**
+ * Resolve url
+ * We have to expand the url to get the proper final file name
+ * Or if we want an error when the url doesn't exist
+ * Example from http://www.2ality.com/2012/04/expand-urls.html 
+ * @param {string} url - URL to download
+ * @returns {string} Resolved url
+ */
+var resolveUrl = function(url) {
+  var deferred = Q.defer();
+  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      deferred.resolve(response.request.href);
+    }
+  });
+  return deferred.promise;
+};
+
+
+/**
  * Download file
  * @param {string} url - URL to download
  * @param {string} dest - Destination folder
@@ -557,8 +580,14 @@ var pAddComicUrl = function(url) {
   var tmpName = Date.now() + '';
   var newName = tmpName + projectExt;
 
-  return downloadFile(url, TMP_DIR, newName)
-    .then(pAddComicArchive);
+  return resolveUrl(url)
+    .then(function(res) {
+      var resolvedUrl = res;
+      return downloadFile(resolvedUrl, TMP_DIR, newName);
+    })
+    .then(pAddComicArchive, function(err) {
+      sendMessage('error', { message: err.message });
+    });
 };
 
 
@@ -572,7 +601,9 @@ var pAddComicFolder = function(fsPath) {
   var tmpPath = path.join(TMP_DIR, newName);
 
   return zipFolder(fsPath, tmpPath)
-    .then(pAddComicArchive);
+    .then(pAddComicArchive, function(err) {
+      sendMessage('error', { message: err.message });
+    });
 };
 
 

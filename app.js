@@ -184,9 +184,7 @@ var loadIntComics = function() {
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
     promisesLoadComics.push(readComicInt(fsPath, comicsDir[i]));
-    console.log('after', comicsDir[i]);
   }
-  console.log('ended');
 };
 
 
@@ -200,9 +198,8 @@ var readComicInt = function(fsPath, folder) {
     .then(function(res) {
       var entry = addEntry(res, fsPath, folder);
       comics[entry.id] = entry.o;
-      console.log('entry', entry.id);
     }, function(err) {
-      console.error(err);
+      sendMessage('error', { message: err.message });
     });
 };
 
@@ -224,9 +221,7 @@ var loadExtComics = function() {
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
     promisesLoadComics.push(readComicFolder(fsPath, comicsDir[i]));
-    console.log('after', comicsDir[i]);
   }
-  console.log('ended');
 };
 
 
@@ -240,9 +235,8 @@ var readComicFolder = function(fsPath, folder) {
     .then(function(res) {
       var entry = addEntry(res, fsPath, folder);
       projects[entry.id] = entry.o;
-      console.log('entry', entry.id);
     }, function(err) {
-      console.error(err);
+      sendMessage('error', { message: err.message });
     });
 };
 
@@ -725,7 +719,6 @@ var init = function() {
   loadExtComics();
   return Q.all(promisesLoadComics)
     .then(function() {
-      console.log('all promises');
       $mainFrame.load(function() {
         $mainFrame.css('opacity', '1');
         sendMessage('start');

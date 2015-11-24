@@ -183,7 +183,7 @@ var loadIntComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    promisesLoadComics.push(readComicInt(fsPath, comicsDir[i]));
+    promisesLoadComics.push(readComicInt(fsPath));
   }
 };
 
@@ -191,12 +191,11 @@ var loadIntComics = function() {
 /**
  * Add comic from the proprietary folder in the app
  * @param {string} fsPath - Filesystem path of the archive
- * @param {string} folder - Folder name
  */
-var readComicInt = function(fsPath, folder) {
+var readComicInt = function(fsPath) {
   return readComicJson(fsPath)
     .then(function(res) {
-      var entry = addEntry(res, fsPath, folder);
+      var entry = addEntry(res, fsPath);
       comics[entry.id] = entry.o;
     }, function(err) {
       sendMessage('error', { message: err.message });
@@ -220,7 +219,7 @@ var loadExtComics = function() {
 
   for (var i = 0; i < comicsDir.length; i++) {
     fsPath = path.join(comicsPath, comicsDir[i]);
-    promisesLoadComics.push(readComicFolder(fsPath, comicsDir[i]));
+    promisesLoadComics.push(readComicFolder(fsPath));
   }
 };
 
@@ -228,12 +227,11 @@ var loadExtComics = function() {
 /**
  * Read comic from folder
  * @param {string} fsPath - Filesystem path of the folder
- * @param {string} folder - Folder name
  */
-var readComicFolder = function(fsPath, folder) {
+var readComicFolder = function(fsPath) {
   return readComicJson(fsPath)
     .then(function(res) {
-      var entry = addEntry(res, fsPath, folder);
+      var entry = addEntry(res, fsPath);
       projects[entry.id] = entry.o;
     }, function(err) {
       sendMessage('error', { message: err.message });
@@ -245,11 +243,10 @@ var readComicFolder = function(fsPath, folder) {
  * Add entry
  * @param {object} comicData - JSON comic data
  * @param {string} fsPath - Filesystem path of the comic folder
- * @param {string} folder - Name of the comic folder
  * @returns {string} Name of the comic folder
  */
-var addEntry = function(comicData, fsPath, folder) {
-  var id = folder;
+var addEntry = function(comicData, fsPath) {
+  var id = path.basename(fsPath);
   var serverPath = '/' + id;
   
   var obj = {
@@ -615,7 +612,7 @@ var pAddComicArchive = function(archive) {
     })
   // add entry
     .then(function() {
-      var entry = addEntry(comicJson, fsPath, slug);
+      var entry = addEntry(comicJson, fsPath);
       projects[entry.id] = entry.o;
       // tell to load data in UI page
       sendMessage('load-item', { id: entry.id });

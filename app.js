@@ -151,14 +151,14 @@ var serverStart = function() {
       init();
     });
 
-    server.on('connection', function (socket) {
+    server.on('connection', function(socket) {
       // Add a newly connected socket
       var socketId = nextSocketId++;
       sockets[socketId] = socket;
       // console.log('socket', socketId, 'opened');
 
       // Remove the socket when it closes
-      socket.on('close', function () {
+      socket.on('close', function() {
         // console.log('socket', socketId, 'closed');
         delete sockets[socketId];
       });
@@ -368,6 +368,29 @@ var checksumFile = Q.denodeify(checksum.file);
 
 
 /**
+ * Remove all files in the given path recursively
+ * @param {string} fsPath
+ * @returns {object} dirs: array of removed dirs, files: array of removed files
+ */
+var removeFiles = function(fsPath) {
+  var deferred = Q.defer();
+  rmdir(fsPath, function(err, dirs, files) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      var res = {
+        dirs: dirs,
+        files: files
+      };
+      deferred.resolve(res);
+    }
+  });
+  return deferred.promise;
+};
+
+
+/**
  * Read comic.json file
  * @param {string} fsPath - Filesystem path of the folder where the file is
  * @returns {object} content in json format of the file
@@ -376,7 +399,7 @@ var readComicJson = function(fsPath) {
   var file = path.join(fsPath, 'comic.json');
   var deferred = Q.defer();
   var obj;
-  fs.readFile(file, function (err, data) {
+  fs.readFile(file, function(err, data) {
     if (err) {
       deferred.reject(err);
     }
@@ -520,20 +543,18 @@ var openFolder = function(id) {
  */
 var removeEntry = function(id) {
   if (!projects[id]) {
+    sendMessage('error', { message: 'Project <code>' + id + '</code> not found' });
     return false;
   }
   var fsPath = projects[id].fsPath;
-  // delete files
-  rmdir(fsPath, function(err) {
-    if (err) {
-      sendMessage('error', { message: err.message });
-      console.err(err);
-    }
-    else {
+
+  return removeFiles(fsPath)
+    .then(function() {
       delete projects[id];
       sendMessage('deleted', { id: id });
-    }
-  });
+    }, function(err) {
+      sendMessage('error', { message: err.message });
+    });
 };
 
 
@@ -583,6 +604,10 @@ var pAddComicArchive = function(archive) {
       checksum = res;
       return unzipFile(archive, tmpPath);
     })
+  // delete tmp archive
+    .then(function() {
+      return removeFiles(archive);
+    })
   // read comic.json
     .then(function() {
       return readComicJson(tmpPath);
@@ -600,19 +625,18 @@ var pAddComicArchive = function(archive) {
       projects[entry.id] = entry.o;
       // tell to load data in UI page
       sendMessage('load-item', { id: entry.id });
-      // delete tmp files
-      rmdir(archive, function() {});
-
-    }, function(err) {
+    },
+  // handle errors
+    function(err) {
       // delete tmp files and folders
+      // we are checking they exist because it depends on when the error was fired
       if (exists(archive)) {
-        rmdir(archive, function() {  });
+        removeFiles(archive);
       }
       if (exists(tmpPath)) {
-        rmdir(tmpPath, function() {  });
+        removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
-      console.error(err);
     });
 };
 

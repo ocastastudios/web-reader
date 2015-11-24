@@ -1,28 +1,32 @@
 {{#each comics}}
 {{#with data}}
-<h3>{{title}}</h3>
-<p>{{summary}}</p>
 
-<img src="/{{slug}}/cover.png" alt="{{title}} cover">
+<div class="comic-item" id="comic-{{@key}}">
+  <h3>{{title}}</h3>
+  <p>{{summary}}</p>
 
-<div>version: {{version}}</div>
-<div>published: {{publish_date}}</div>
-<div>orientation: {{config.orientation}}</div>
+  <img src="{{../serverPath}}/cover.png" alt="{{title}} cover">
 
-{{#if creators}}
-<h4>Creators</h4>
-<dl>
-  {{#each creators}}
-  <dt>{{name}}</dt>
-    <dd>{{role}}</dd>
-  {{/each}}
-</dl>
-{{/if}}
+  <div>version: {{version}}</div>
+  <div>published: {{publish_date}}</div>
+  <div>orientation: {{config.orientation}}</div>
 
-<a href="/{{slug}}/">View comic</a>
-{{#if ../../internal}}
-<button class="open-int" data-id="{{@key}}">View in browser</button>
-{{/if}}
+  {{#if creators}}
+  <h4>Creators</h4>
+  <dl>
+    {{#each creators}}
+    <dt>{{name}}</dt>
+      <dd>{{role}}</dd>
+    {{/each}}
+  </dl>
+  {{/if}}
+
+  <a href="{{../serverPath}}">View comic</a>
+  {{#if ../../internal}}
+  <button class="open-int" data-id="{{@key}}">View in browser</button>
+  {{/if}}
+</div>
+
 {{/with}}
 {{/each}}
 

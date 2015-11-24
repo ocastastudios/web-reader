@@ -325,7 +325,7 @@ var unzipFile = function(archive, dest) {
  * Download file
  * @param {string} url - URL to download
  * @param {string} dest - Destination folder
- * @param {string} newName - Rename file to this
+ * @param {string} newName - Rename file to this - optional
  * @returns {string} Filesystem path of the downloaded file
  */
 var downloadFile = function(url, dest, newName) {

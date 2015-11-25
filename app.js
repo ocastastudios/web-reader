@@ -110,6 +110,17 @@ var promisesLoadComics = [];
 var downloadStream;
 var downloadStreamInterrupted = false;
 
+var hbs = exphbs.create({
+  extname: '.hbs',
+  helpers: {
+    breaklines: function(text) {
+      text = hbs.handlebars.Utils.escapeExpression(text);
+      text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
+      return new hbs.handlebars.SafeString(text);
+    }
+  }
+});
+
 
 /**
  * Start the local server
@@ -124,7 +135,7 @@ var serverStart = function() {
 
     // handlebars
     app.set('views', path.join(process.cwd(), 'views'));
-    app.engine('.hbs', exphbs({extname: '.hbs'}));
+    app.engine('.hbs', hbs.engine);
     app.set('view engine', '.hbs');
 
     app.use(express.static(path.join(process.cwd(), 'public')));

@@ -24,4 +24,4 @@
   * [x] be able to be interrupted at any time and return an "interrupted" error
   * [x] return an error if link doesn't work
   * [x] better url handling
-* [ ] read '/n' in the comic.json
+* [x] read '/n' in the comic.json

@@ -52,6 +52,7 @@ var junk = require('junk');
 var S = require('string');
 var rmdir = require('rmdir');
 var request = require('request');
+var isOnline = require('is-online');
 
 // settings
 // they may end up in the advanced setting panel
@@ -392,6 +393,14 @@ var downloadFile = function(url, dest, newName) {
  * @returns {string} checksum
  */
 var checksumFile = Q.denodeify(checksum.file);
+
+
+/**
+ * Check if the internet connection is up
+ * We'll need it when interfacing with the online comic library
+ * @returns {boolean} True if online
+ */
+var checkOnline = Q.denodeify(isOnline);
 
 
 /**

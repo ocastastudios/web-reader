@@ -274,8 +274,8 @@ var addEntry = function(comicData, fsPath) {
     data: comicData
   };
   app.get(serverPath + '/', connectInject({
-    snippet: comicSnippet,
     rules: [{
+      snippet: comicSnippet,
       match: /<\/body>/,
       fn: function(w, s) {
         return s + w;

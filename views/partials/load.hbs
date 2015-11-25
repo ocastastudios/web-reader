@@ -1,4 +1,15 @@
 <div id="accordion">
+  <h3>Open url</h3>
+  <div>
+    <form id="open-remote-form">
+      <label for="open-remote-url">Url</label><input type="text" id="open-remote-url" required value="releases.ubuntu.com/14.04.3/ubuntu-14.04.3-desktop-amd64.iso">
+      <input type="submit" value="Download">
+      <input type="button" id="open-remote-stop" value="Stop" style="display: none;">
+    </form>
+
+    <div class="progressbar" id="progressbar-url"><div class="progress-label">Downloading...</div></div>
+  </div>
+
   <h3>Open local folder</h3>
   <div>
     <form id="">
@@ -12,23 +23,13 @@
       <label>Select file<input type="file" id="open-local-archive" accept=".elcx"></label>
     </form>
   </div>
-  
-  <h3>Open url</h3>
-  <div>
-    <form id="open-remote-form">
-      <label for="open-remote-url">Url</label><input type="text" id="open-remote-url" required>
-      <input type="submit" value="Download">
-    </form>
-
-    <div class="progressbar" id="progressbar-url"><div class="progress-label">Downloading...</div></div>
-  </div>
 </div>
 
 <script>
 $("#accordion").accordion();
 
 
-// forms
+// local folder
 var $localFolder = $('#open-local-folder');
 $localFolder.on('change', function() {
   var path = this.files[0].path;
@@ -39,6 +40,7 @@ $localFolder.on('change', function() {
   }
 });
 
+// local archive
 var $localArchive = $('#open-local-archive');
 $localArchive.on('change', function() {
   var path = this.files[0].path;
@@ -49,25 +51,53 @@ $localArchive.on('change', function() {
   }
 });
 
+// remote url
 var $openRemoteForm = $('#open-remote-form');
 var $openRemoteUrl = $('#open-remote-url');
+var $openRemoteStop = $('#open-remote-stop');
 $openRemoteForm.on('submit', function(e) {
   e.preventDefault();
-  var url = $openRemoteUrl.val();
-  if (url !== '') {
-    sendMessage('url', { url: url });
-    $progressbarUrl.show();
-  }
+  remoteStart();
+});
+$openRemoteStop.on('click', function() {
+  sendMessage('interrupt');
 });
 
+var addhttp = function(url) {
+  if (!/^(f|ht)tps?:\/\//i.test(url)) {
+    url = "http://" + url;
+  }
+  return url;
+};
 
-// progress bar
+var remoteStart = function() {
+  var url = addhttp($openRemoteUrl.val());
+  if (url !== '') {
+    sendMessage('url', { url: url });
+  }
+  $openRemoteStop.show();
+  $progressbarUrl.progressbar('value', false)
+  $progressbarUrl.show();
+};
+
+var remoteStop = function() {
+  $progressLabelUrl.text('Error!');
+  $openRemoteStop.hide();
+  $progressbarUrl.hide();
+};
+
 var $progressbarUrl = $('#progressbar-url');
 var $progressLabelUrl = $progressbarUrl.find('.progress-label');
+var totalDownload;
 $progressbarUrl.progressbar({
   value: false,
   change: function() {
-    $progressLabelUrl.text($progressbarUrl.progressbar('value') + '%');
+    if ($progressbarUrl.progressbar('value') === false) {
+      $progressLabelUrl.text('Downloading...');
+    }
+    else {
+      $progressLabelUrl.text($progressbarUrl.progressbar('value') + '% of ' + totalDownload);
+    }
   },
   complete: function() {
     $progressLabelUrl.text('Complete!');
@@ -79,7 +109,16 @@ receiveMessage = function(msg) {
   loadReceiveMessage(msg);
 
   if (msg.type === 'progress-url') {
-    $progressbarUrl.progressbar('value', msg.message);
+    if (msg.message === -1) {
+      remoteStop();
+    }
+    else {
+      $progressbarUrl.progressbar('value', msg.message);
+    }
+  }
+
+  if (msg.type === 'download-started') {
+    totalDownload = msg.message;
   }
 };
 </script>

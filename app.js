@@ -106,6 +106,8 @@ var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;bac
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
 var promisesLoadComics = [];
+var downloadStream;
+var downloadStreamInterrupted = false;
 
 
 /**
@@ -337,7 +339,12 @@ var resolveUrl = function(url) {
       deferred.reject(err);
     }
     else {
-      deferred.resolve(response.request.href);
+      if (response.statusCode === 404) {
+        deferred.reject(new Error('404 Error File Not Found'));
+      }
+      else {
+        deferred.resolve(response.request.href);
+      }
     }
   });
   return deferred.promise;
@@ -366,7 +373,13 @@ var downloadFile = function(url, dest, newName) {
       deferred.reject(err);
     }
     else {
-      deferred.resolve(files[0].history[2]);
+      if (!downloadStreamInterrupted) {
+        deferred.resolve(files[0].history[2]);
+      }
+      else {
+        downloadStreamInterrupted = false;
+        deferred.reject(new Error('Download interrupted'));
+      }
     }
   });
   return deferred.promise;
@@ -484,6 +497,30 @@ var sendMessage = function(type, obj) {
 
 
 /**
+ * Convert size in bytes to KB, MB, GB
+ * from http://stackoverflow.com/a/18650828/471720
+ * @param {number} bytes - Int number of bytes
+ * @param {number} decimals - Number of decimals to show - not required
+ * @returns {string} Formatted value
+ */
+var formatBytes = function(bytes, decimals) {
+  if (bytes === 0) {
+    return '0 Byte';
+  }
+  var k = 1024;
+  // on Mac OS X use this
+  // http://www.macworld.com/article/1142471/snow_leopard_math.html
+  if (process.platform === 'darwin') {
+    k = 1000;
+  }
+  var dm = decimals + 1 || 3;
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  var i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
+};
+
+
+/**
  * Progress of the download
  * @param {object} res - response data
  * @param {string} url - url we are downloading from
@@ -500,6 +537,7 @@ var downloadStatus = function(res, url, cb) {
   var current = 0;
   var currentPerc = 0;
   var prevCurrentPerc;
+  sendMessage('download-started', { message: formatBytes(total) });
   res.on('data', function(data) {
     current += data.length;
     currentPerc = parseInt(current * totalPerc, 10);
@@ -509,9 +547,21 @@ var downloadStatus = function(res, url, cb) {
     }
   });
   res.on('end', function() {
-    sendMessage('progress-url', { message: 100 });
+    if (!downloadStreamInterrupted) {
+      // send progressbar complete
+      sendMessage('progress-url', { message: 100 });
+    }
+    else {
+      // send progressbar error
+      sendMessage('progress-url', { message: -1 });
+    }
     cb();
   });
+  res.on('interrupt', function() {
+    downloadStreamInterrupted = true;
+    res.destroy();
+  });
+  downloadStream = res;
 };
 
 
@@ -579,13 +629,21 @@ var removeEntry = function(id) {
 var pAddComicUrl = function(url) {
   var tmpName = Date.now() + '';
   var newName = tmpName + projectExt;
+  var archive = path.join(TMP_DIR, newName);
 
   return resolveUrl(url)
     .then(function(res) {
       var resolvedUrl = res;
       return downloadFile(resolvedUrl, TMP_DIR, newName);
     })
-    .then(pAddComicArchive, function(err) {
+    .then(pAddComicArchive,
+  // handle errors
+    function(err) {
+      // delete tmp files and folders
+      // we are checking they exist because it depends on when the error was fired
+      if (exists(archive)) {
+        removeFiles(archive);
+      }
       sendMessage('error', { message: err.message });
     });
 };
@@ -601,7 +659,14 @@ var pAddComicFolder = function(fsPath) {
   var tmpPath = path.join(TMP_DIR, newName);
 
   return zipFolder(fsPath, tmpPath)
-    .then(pAddComicArchive, function(err) {
+    .then(pAddComicArchive,
+  // handle errors
+    function(err) {
+      // delete tmp files and folders
+      // we are checking they exist because it depends on when the error was fired
+      if (exists(tmpPath)) {
+        removeFiles(tmpPath);
+      }
       sendMessage('error', { message: err.message });
     });
 };
@@ -704,6 +769,10 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'remove-entry') {
     removeEntry(msg.id);
+  }
+
+  if (msg.type === 'interrupt') {
+    downloadStream.emit('interrupt');
   }
 }, false);
 

@@ -18,3 +18,10 @@
 * [ ] fix tilt for Sway
 * [ ] something that shows or interfaces with http://electricomics.net/library/
 * [ ] stop importing comic functionality
+* [x] the download functionality needs:
+  * [x] progress bar
+  * [x] total final file size at the beginning
+  * [x] be able to be interrupted at any time and return an "interrupted" error
+  * [x] return an error if link doesn't work
+  * [x] better url handling
+* [ ] read '/n' in the comic.json

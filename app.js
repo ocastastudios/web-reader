@@ -80,6 +80,9 @@ else {
   // win.maximize();
 }
 
+// clear cache
+nwgui.App.clearCache();
+
 // hack to make keyboard shortcuts work (at least under Mac OS)
 // https://github.com/nwjs/nw.js/issues/2462
 var nativeMenuBar = new nwgui.Menu({ type: 'menubar' });
@@ -103,7 +106,7 @@ var serverUrl = 'http://' + options.host + ':' + options.port;
 var projects = {};
 var projectExt = options.ext;
 var comics = {};
-var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">NAV</ec-webreader-nav>';
+var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/home">HOME</a></ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
 var promisesLoadComics = [];
@@ -270,7 +273,15 @@ var addEntry = function(comicData, fsPath) {
     name: id,
     data: comicData
   };
-  app.get(serverPath + '/', connectInject({ snippet: comicSnippet }));
+  app.get(serverPath + '/', connectInject({
+    snippet: comicSnippet,
+    rules: [{
+      match: /<\/body>/,
+      fn: function(w, s) {
+        return s + w;
+      }
+    }]
+  }));
   app.use(serverPath, express.static(fsPath));
   return { id: id, o: obj };
 };

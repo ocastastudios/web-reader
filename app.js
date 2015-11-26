@@ -281,17 +281,27 @@ var addEntry = function(comicData, fsPath) {
     name: id,
     data: comicData
   };
-  app.get(serverPath + '/', connectInject({
+  app.get(serverPath + '/', persConnectInject);
+  app.use(serverPath, express.static(fsPath));
+  return { id: id, o: obj };
+};
+
+
+/**
+ * Personalized version of connectInject
+ */
+var persConnectInject = function(req, res, next) {
+  var internal = isInternal(req);
+  var snip = comicSnippet + '<div>' + internal + '</div>';
+  return connectInject({
     rules: [{
-      snippet: comicSnippet,
+      snippet: snip,
       match: /<\/body>/,
       fn: function(w, s) {
         return s + w;
       }
     }]
-  }));
-  app.use(serverPath, express.static(fsPath));
-  return { id: id, o: obj };
+  })(req, res, next);
 };
 
 

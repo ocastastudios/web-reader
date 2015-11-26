@@ -49,19 +49,19 @@ var deleteItem = function(id) {
   $('#library-' + id).remove();
 };
 
-$('.open-ext').on('click', function(e) {
+$document.on('click', '.open-ext', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   sendMessage('open-ext', { id: id });
 });
 
-$('.open-folder').on('click', function(e) {
+$document.on('click', '.open-folder', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   sendMessage('open-folder', { id: id });
 });
 
-$('.remove-entry').on('click', function(e) {
+$document.on('click', '.remove-entry', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   dialogRemoveEntry(id);

@@ -216,7 +216,7 @@ var readComicInt = function(fsPath) {
       var entry = addEntry(res, fsPath);
       comics[entry.id] = entry.o;
     }, function(err) {
-      sendMessage('error', { message: err.message });
+      console.error(err);
     });
 };
 
@@ -252,7 +252,7 @@ var readComicFolder = function(fsPath) {
       var entry = addEntry(res, fsPath);
       projects[entry.id] = entry.o;
     }, function(err) {
-      sendMessage('error', { message: err.message });
+      console.error(err);
     });
 };
 

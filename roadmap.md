@@ -13,11 +13,10 @@
   * [x] remove entry and delete files - only if page is viewed from inside the app
 * [ ] add "about Electricomics" section
 * [x] add progress bar to download
-* [ ] add loading screen when adding comic
+* [x] add loading screen when adding comic
 * [x] add splash screen
 * [ ] fix tilt for Sway
 * [ ] something that shows or interfaces with http://electricomics.net/library/
-* [ ] stop importing comic functionality
 * [x] the download functionality needs:
   * [x] progress bar
   * [x] total final file size at the beginning
@@ -25,3 +24,5 @@
   * [x] return an error if link doesn't work
   * [x] better url handling
 * [x] read '/n' in the comic.json
+* [ ] landscape/portrait? how?
+* [x] add archive ui should copy the zip to the tmp folder and its own function

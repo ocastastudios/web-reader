@@ -742,7 +742,7 @@ var pAddComicArchive = function(archive) {
       var entry = addEntry(comicJson, fsPath);
       projects[entry.id] = entry.o;
       // tell to load data in UI page
-      sendMessage('load-item', { id: entry.id });
+      sendMessage('add-item', { id: entry.id });
     },
   // handle errors
     function(err) {

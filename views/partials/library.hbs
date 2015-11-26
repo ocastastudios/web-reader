@@ -8,21 +8,7 @@
 
 
 <script>
-var loadLibraryItem = function(item) {
-  console.log(item);
-};
-
-$('.open-ext').on('click', function(e) {
-  e.preventDefault();
-  var id = $(this).data('id');
-  sendMessage('open-ext', { id: id });
-});
-
-$('.open-folder').on('click', function(e) {
-  e.preventDefault();
-  var id = $(this).data('id');
-  sendMessage('open-folder', { id: id });
-});
+var $libraryWrapper = $('#library-wrapper');
 
 var dialogRemoveEntry = function(id) {
   var confirm = $('#dialog-remove-entry').dialog({
@@ -46,37 +32,52 @@ var dialogRemoveEntry = function(id) {
   confirm.dialog('open');
 };
 
+var addItem = function(id) {
+  $.ajax({
+    url: '/item?id=' + id,
+    dataType: 'html',
+    success: function(data) {
+      $libraryWrapper.append(data);
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      dialogError(textStatus);
+    }
+  });
+};
+
+var deleteItem = function(id) {
+  $('#library-' + id).remove();
+};
+
+$('.open-ext').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  sendMessage('open-ext', { id: id });
+});
+
+$('.open-folder').on('click', function(e) {
+  e.preventDefault();
+  var id = $(this).data('id');
+  sendMessage('open-folder', { id: id });
+});
+
 $('.remove-entry').on('click', function(e) {
   e.preventDefault();
   var id = $(this).data('id');
   dialogRemoveEntry(id);
 });
 
-var $libraryWrapper = $('#library-wrapper');
 
 var libraryReceiveMessage = receiveMessage;
 receiveMessage = function(msg) {
   libraryReceiveMessage(msg);
 
-  if (msg.type === 'library') {
-    loadLibraryItem(msg.item);
-  }
-
   if (msg.type === 'deleted') {
-    $('#library-' + msg.id).remove();
+    deleteItem(msg.id);
   }
 
-  if (msg.type === 'load-item') {
-    $.ajax({
-      url: '/item?id=' + msg.id,
-      dataType: 'html',
-      success: function(data) {
-        $libraryWrapper.append(data);
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        dialogError(textStatus);
-      }
-    });
+  if (msg.type === 'add-item') {
+    addItem(msg.id);
   }
 };
 </script>

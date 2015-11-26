@@ -27,41 +27,11 @@
 
 <script>
 $("#accordion").accordion();
-
-
-// local folder
-var $localFolder = $('#open-local-folder');
-$localFolder.on('change', function() {
-  var path = this.files[0].path;
-  if (path !== '') {
-    sendMessage('local-folder', { path: path });
-    // reset its value so it can catch the next event in case we select the same previous value
-    this.value = '';
-  }
-});
-
-// local archive
-var $localArchive = $('#open-local-archive');
-$localArchive.on('change', function() {
-  var path = this.files[0].path;
-  if (path !== '') {
-    sendMessage('local-archive', { path: path });
-    // reset its value so it can catch the next event in case we select the same previous value
-    this.value = '';
-  }
-});
-
-// remote url
-var $openRemoteForm = $('#open-remote-form');
 var $openRemoteUrl = $('#open-remote-url');
 var $openRemoteStop = $('#open-remote-stop');
-$openRemoteForm.on('submit', function(e) {
-  e.preventDefault();
-  remoteStart();
-});
-$openRemoteStop.on('click', function() {
-  sendMessage('interrupt');
-});
+var $progressbarUrl = $('#progressbar-url');
+var $progressLabelUrl = $progressbarUrl.find('.progress-label');
+var totalDownload;
 
 var addhttp = function(url) {
   if (!/^(f|ht)tps?:\/\//i.test(url)) {
@@ -86,9 +56,42 @@ var remoteStop = function() {
   $progressbarUrl.hide();
 };
 
-var $progressbarUrl = $('#progressbar-url');
-var $progressLabelUrl = $progressbarUrl.find('.progress-label');
-var totalDownload;
+var remoteUpdated = function(val) {
+  $progressbarUrl.progressbar('value', val);
+};
+
+var remoteStarted = function(val) {
+  totalDownload = val;
+};
+
+// local folder
+$('#open-local-folder').on('change', function() {
+  var path = this.files[0].path;
+  if (path !== '') {
+    sendMessage('local-folder', { path: path });
+    // reset its value so it can catch the next event in case we select the same previous value
+    this.value = '';
+  }
+});
+
+// local archive
+$('#open-local-archive').on('change', function() {
+  var path = this.files[0].path;
+  if (path !== '') {
+    sendMessage('local-archive', { path: path });
+    // reset its value so it can catch the next event in case we select the same previous value
+    this.value = '';
+  }
+});
+
+// remote url
+$('#open-remote-form').on('submit', function(e) {
+  e.preventDefault();
+  remoteStart();
+});
+$openRemoteStop.on('click', function() {
+  sendMessage('interrupt');
+});
 $progressbarUrl.progressbar({
   value: false,
   change: function() {
@@ -104,6 +107,7 @@ $progressbarUrl.progressbar({
   }
 });
 
+
 var loadReceiveMessage = receiveMessage;
 receiveMessage = function(msg) {
   loadReceiveMessage(msg);
@@ -113,12 +117,12 @@ receiveMessage = function(msg) {
       remoteStop();
     }
     else {
-      $progressbarUrl.progressbar('value', msg.message);
+      remoteUpdated(msg.message);
     }
   }
 
   if (msg.type === 'download-started') {
-    totalDownload = msg.message;
+    remoteStarted(msg.message);
   }
 };
 </script>

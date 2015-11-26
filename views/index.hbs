@@ -82,7 +82,7 @@ window.addEventListener('message', function(e) {
     msg = JSON.parse(e.data);
   }
   catch (err) {
-    console.log('error in the received post message');
+    console.error(err);
     return false;
   }
 

@@ -126,6 +126,20 @@ var hbs = exphbs.create({
 
 
 /**
+ * Check if page is called from app or external browser
+ * @param {object} req - Request
+ * @returns {boolean} True if called from the app
+ */
+var isInternal = function(req) {
+  var internal = false;
+  if (req.headers['user-agent'] === 'elcx-web-reader') {
+    internal = true;
+  }
+  return internal;
+};
+
+
+/**
  * Start the local server
  */
 var serverStart = function() {
@@ -143,10 +157,7 @@ var serverStart = function() {
 
     app.use(express.static(path.join(process.cwd(), 'public')));
     app.use('/home', function(req, res) {
-      var internal = false;
-      if (req.headers['user-agent'] === 'elcx-web-reader') {
-        internal = true;
-      }
+      var internal = isInternal(req);
       res.render('index', { comics : comics, library: projects, internal: internal });
     });
 
@@ -154,10 +165,7 @@ var serverStart = function() {
       var id = req.query.id;
       var library = {};
       library[id] = projects[id];
-      var internal = false;
-      if (req.headers['user-agent'] === 'elcx-web-reader') {
-        internal = true;
-      }
+      var internal = isInternal(req);
       res.render('item', { library: library, internal: internal });
     });
 

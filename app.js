@@ -38,7 +38,7 @@ var express = require('express');
 var app = express();
 var http = require('http');
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-extra');
 var exphbs = require('express-handlebars');
 var Download = require('download');
 var DecompressZip = require('decompress-zip');
@@ -498,6 +498,26 @@ var moveFolder = function(source, dest) {
 
 
 /**
+ * Copy a file or directory
+ * @param {string} source - Filesystem path of the file/folder to copy
+ * @param {string} dest - Filesystem path and name of the new file/folder
+ * @returns {string} Filesystem path and name of the new file/folder
+ */
+var copyFs = function(source, dest) {
+  var deferred = Q.defer();
+  fs.copy(source, dest, function(err) {
+    if (err) {
+      deferred.reject(err);
+    }
+    else {
+      deferred.resolve(dest);
+    }
+  });
+  return deferred.promise;
+};
+
+
+/**
  * Check if file or directory exists
  * @param {string} fsPath - Path in the filesystem to test
  * @returns {boolean} true if it exists
@@ -704,7 +724,30 @@ var pAddComicFolder = function(fsPath) {
 
 
 /**
- * Import comic from local archive
+ * Import comic from local archive - for the UI
+ * @param {string} archive - Filesystem path of the archive
+ */
+var pAddComicElcx = function(archive) {
+  var tmpName = Date.now() + '';
+  var newName = tmpName + projectExt;
+  var tmpPath = path.join(TMP_DIR, newName);
+
+  return copyFs(archive, tmpPath)
+    .then(pAddComicArchive,
+  // handle errors
+    function(err) {
+      // delete tmp files and folders
+      // we are checking they exist because it depends on when the error was fired
+      if (exists(tmpPath)) {
+        removeFiles(tmpPath);
+      }
+      sendMessage('error', { message: err.message });
+    });
+};
+
+
+/**
+ * Import comic from archive
  * @param {string} archive - Filesystem path of the archive
  */
 var pAddComicArchive = function(archive) {
@@ -779,7 +822,7 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'local-archive') {
-    pAddComicArchive(msg.path);
+    pAddComicElcx(msg.path);
   }
 
   if (msg.type === 'url') {

@@ -682,6 +682,8 @@ var pAddComicUrl = function(url) {
   var newName = tmpName + projectExt;
   var archive = path.join(TMP_DIR, newName);
 
+  sendMessage('import', { message: 'started' });
+
   return resolveUrl(url)
     .then(function(res) {
       var resolvedUrl = res;
@@ -696,6 +698,7 @@ var pAddComicUrl = function(url) {
         removeFiles(archive);
       }
       sendMessage('error', { message: err.message });
+      sendMessage('import', { message: 'error' });
     });
 };
 
@@ -709,6 +712,8 @@ var pAddComicFolder = function(fsPath) {
   var newName = tmpName + projectExt;
   var tmpPath = path.join(TMP_DIR, newName);
 
+  sendMessage('import', { message: 'started' });
+
   return zipFolder(fsPath, tmpPath)
     .then(pAddComicArchive,
   // handle errors
@@ -719,6 +724,7 @@ var pAddComicFolder = function(fsPath) {
         removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
+      sendMessage('import', { message: 'error' });
     });
 };
 
@@ -732,6 +738,8 @@ var pAddComicElcx = function(archive) {
   var newName = tmpName + projectExt;
   var tmpPath = path.join(TMP_DIR, newName);
 
+  sendMessage('import', { message: 'started' });
+
   return copyFs(archive, tmpPath)
     .then(pAddComicArchive,
   // handle errors
@@ -742,6 +750,7 @@ var pAddComicElcx = function(archive) {
         removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
+      sendMessage('import', { message: 'error' });
     });
 };
 
@@ -757,6 +766,8 @@ var pAddComicArchive = function(archive) {
   var comicJson;
   var slug;
   var fsPath;
+
+  sendMessage('import', { message: 'started' });
 
   // checksum file
   return checksumFile(archive)
@@ -786,6 +797,7 @@ var pAddComicArchive = function(archive) {
       projects[entry.id] = entry.o;
       // tell to load data in UI page
       sendMessage('add-item', { id: entry.id });
+      sendMessage('import', { message: 'completed' });
     },
   // handle errors
     function(err) {
@@ -798,6 +810,7 @@ var pAddComicArchive = function(archive) {
         removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
+      sendMessage('import', { message: 'error' });
     });
 };
 

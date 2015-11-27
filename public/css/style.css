@@ -37,13 +37,8 @@ input[type=file] {
 }
 
 .splash-screen {
-  background: #000 url(../images/splash.png) no-repeat scroll center center;
+  background: #000 url(../images/splash.svg) no-repeat scroll center center;
   background-size: 50%;
-}
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .splash-screen {
-    background-image: url(../images/splash@2x.png);
-  }
 }
 
 .iframe-wrapper {

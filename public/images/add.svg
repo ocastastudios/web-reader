@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <title>add icon</title>
+  <g id="add" stroke="#FFF" fill="none" fill-rule="evenodd">
+    <path id="circle" d="M39.095 20.048c0 10.52-8.528 19.047-19.047 19.047C9.528 39.095 1 30.567 1 20.048 1 9.528 9.528 1 20.048 1c10.52 0 19.047 8.528 19.047 19.048z"/>
+    <g id="plus" stroke-linecap="square">
+      <path id="line-horiz" d="M10.5 19.5h19.235"/>
+      <path id="line-vert" d="M20 10v19.235"/>
+    </g>
+  </g>
+</svg>

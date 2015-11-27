@@ -1,0 +1,11 @@
+<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;">
+  <a href="/home">HOME</a>
+</ec-webreader-nav>
+{{#if internal}}
+  <div>internal</div>
+{{/if}}
+
+{{!-- 
+hbs.handlebars.compile('<div>{{internal}}</div>')({internal:'a'})
+hbs.getPartials().then(function(partials) {console.log(partials['comic-menu']({internal:1})); })
+--}}

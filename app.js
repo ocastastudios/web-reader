@@ -291,6 +291,11 @@ var addEntry = function(comicData, fsPath) {
  * Personalized version of connectInject
  */
 var persConnectInject = function(req, res, next) {
+  var originalUrl = req.originalUrl.replace(/\//ig, '');
+  var entry = projects[originalUrl] || comics[originalUrl];
+  if (!entry) {
+    return next();
+  }
   var internal = isInternal(req);
   var snip = comicSnippet + '<div>' + internal + '</div>';
   return connectInject({

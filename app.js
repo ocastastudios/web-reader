@@ -105,7 +105,6 @@ try {
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var projects = {};
 var projectExt = options.ext;
-var comics = {};
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/home">HOME</a></ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
@@ -158,7 +157,7 @@ var serverStart = function() {
     app.use(express.static(path.join(process.cwd(), 'public')));
     app.use('/home', function(req, res) {
       var internal = isInternal(req);
-      res.render('index', { comics : comics, library: projects, internal: internal });
+      res.render('index', { library: projects, internal: internal });
     });
 
     app.use('/item', function(req, res) {
@@ -190,42 +189,6 @@ var serverStart = function() {
       });
     });
   });
-};
-
-
-/**
- * Load all internal comics
- */
-var loadIntComics = function() {
-  var comicsPath = path.join(process.cwd(), 'comics');
-
-  if (!exists(comicsPath)) {
-    return false;
-  }
-
-  var comicsDir = fs.readdirSync(comicsPath);
-  comicsDir = comicsDir.filter(junk.not);
-  var fsPath;
-
-  for (var i = 0; i < comicsDir.length; i++) {
-    fsPath = path.join(comicsPath, comicsDir[i]);
-    promisesLoadComics.push(readComicInt(fsPath));
-  }
-};
-
-
-/**
- * Add comic from the proprietary folder in the app
- * @param {string} fsPath - Filesystem path of the archive
- */
-var readComicInt = function(fsPath) {
-  return readComicJson(fsPath)
-    .then(function(res) {
-      var entry = addEntry(res, fsPath);
-      comics[entry.id] = entry.o;
-    }, function(err) {
-      console.error(err);
-    });
 };
 
 
@@ -292,7 +255,7 @@ var addEntry = function(comicData, fsPath) {
  */
 var persConnectInject = function(req, res, next) {
   var originalUrl = req.originalUrl.replace(/\//ig, '');
-  var entry = projects[originalUrl] || comics[originalUrl];
+  var entry = projects[originalUrl];
   if (!entry) {
     return next();
   }
@@ -640,18 +603,6 @@ var downloadStatus = function(res, url, cb) {
 
 
 /**
- * Open internal comic in external browser
- * @param {string} id - comic id
- */
-var openInt = function(id) {
-  if (!comics[id]) {
-    return false;
-  }
-  nwgui.Shell.openExternal(serverUrl + comics[id].serverPath);
-};
-
-
-/**
  * Open library comic in external browser
  * @param {string} id - comic id
  */
@@ -922,7 +873,6 @@ win.on('close', function() {
  */
 var init = function() {
   $mainFrame.attr('src', serverUrl + '/loading.html');
-  loadIntComics();
   loadExtComics();
   return Q.all(promisesLoadComics)
     .then(function() {

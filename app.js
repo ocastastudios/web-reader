@@ -41,18 +41,12 @@ var path = require('path');
 var fs = require('fs-extra');
 var exphbs = require('express-handlebars');
 var Download = require('download');
-var DecompressZip = require('decompress-zip');
 var connectInject = require('connect-inject');
-var checksum = require('checksum');
 var osenv = require('osenv');
 var Q = require('q');
-var mv = require('mv');
-var archiver = require('archiver');
 var junk = require('junk');
 var S = require('string');
-var rmdir = require('rmdir');
-var request = require('request');
-var isOnline = require('is-online');
+var tools = require('./lib/tools');
 
 // settings
 // they may end up in the advanced setting panel
@@ -125,20 +119,6 @@ var hbs = exphbs.create({
 
 
 /**
- * Check if page is called from app or external browser
- * @param {object} req - Request
- * @returns {boolean} True if called from the app
- */
-var isInternal = function(req) {
-  var internal = false;
-  if (req.headers['user-agent'] === 'elcx-web-reader') {
-    internal = true;
-  }
-  return internal;
-};
-
-
-/**
  * Start the local server
  */
 var serverStart = function() {
@@ -156,7 +136,7 @@ var serverStart = function() {
 
     app.use(express.static(path.join(process.cwd(), 'public')));
     app.use('/home', function(req, res) {
-      var internal = isInternal(req);
+      var internal = tools.isInternal(req);
       res.render('index', { library: projects, internal: internal });
     });
 
@@ -164,7 +144,7 @@ var serverStart = function() {
       var id = req.query.id;
       var library = {};
       library[id] = projects[id];
-      var internal = isInternal(req);
+      var internal = tools.isInternal(req);
       res.render('item', { library: library, internal: internal });
     });
 
@@ -198,7 +178,7 @@ var serverStart = function() {
 var loadExtComics = function() {
   var comicsPath = LIB_DIR;
 
-  if (!exists(comicsPath)) {
+  if (!tools.exists(comicsPath)) {
     return false;
   }
   
@@ -259,7 +239,7 @@ var persConnectInject = function(req, res, next) {
   if (!entry) {
     return next();
   }
-  var internal = isInternal(req);
+  var internal = tools.isInternal(req);
   var snip = comicSnippet + '<div>' + internal + '</div>';
   return connectInject({
     rules: [{
@@ -270,93 +250,6 @@ var persConnectInject = function(req, res, next) {
       }
     }]
   })(req, res, next);
-};
-
-
-/**
- * Zip folder
- * @param {string} source - Filesystem path of the folder
- * @param {string} dest - Filesystem path of the archive, its name included
- * @returns {string} Filesystem path of the archive, its name included
- */
-var zipFolder = function(source, dest) {
-  var deferred = Q.defer();
-
-  var output = fs.createWriteStream(dest);
-  var zipArchive = archiver('zip');
-  output.on('close', function() {
-    deferred.resolve(dest);
-  });
-  zipArchive.pipe(output);
-  zipArchive.bulk([
-    { src: [ '**/*' ], cwd: source, expand: true }
-  ]);
-  zipArchive.finalize(function(err) {
-    if (err) {
-      deferred.reject(err);
-    }
-  });
-
-  return deferred.promise;
-};
-
-
-/**
- * Unzip file
- * @param {string} archive - Filesystem path of the file
- * @param {string} dest - Filesystem path where to extract files
- * @returns {string} Filesystem path of the extracted files
- */
-var unzipFile = function(archive, dest) {
-  var deferred = Q.defer();
-  var unzipper = new DecompressZip(archive);
-
-  unzipper.on('error', function(err) {
-    deferred.reject(err);
-  });
-
-  unzipper.on('extract', function() {
-    deferred.resolve(dest);
-  });
-
-  // unzipper.on('progress', function(index, count) {
-  // });
-
-  unzipper.extract({
-    path: dest,
-    filter: function(file) {
-      return file.type !== 'SymbolicLink';
-    }
-  });
-
-  return deferred.promise;
-};
-
-
-/**
- * Resolve url
- * We have to expand the url to get the proper final file name
- * Or if we want an error when the url doesn't exist
- * Example from http://www.2ality.com/2012/04/expand-urls.html 
- * @param {string} url - URL to download
- * @returns {string} Resolved url
- */
-var resolveUrl = function(url) {
-  var deferred = Q.defer();
-  request({ method: 'HEAD', url: url, followAllRedirects: true }, function (err, response) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      if (response.statusCode === 404) {
-        deferred.reject(new Error('404 Error File Not Found'));
-      }
-      else {
-        deferred.resolve(response.request.href);
-      }
-    }
-  });
-  return deferred.promise;
 };
 
 
@@ -396,45 +289,6 @@ var downloadFile = function(url, dest, newName) {
 
 
 /**
- * Create sha1 checksum of the file
- * @param {string} file - Filesystem path of the file
- * @returns {string} checksum
- */
-var checksumFile = Q.denodeify(checksum.file);
-
-
-/**
- * Check if the internet connection is up
- * We'll need it when interfacing with the online comic library
- * @returns {boolean} True if online
- */
-var checkOnline = Q.denodeify(isOnline);
-
-
-/**
- * Remove all files in the given path recursively
- * @param {string} fsPath
- * @returns {object} dirs: array of removed dirs, files: array of removed files
- */
-var removeFiles = function(fsPath) {
-  var deferred = Q.defer();
-  rmdir(fsPath, function(err, dirs, files) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      var res = {
-        dirs: dirs,
-        files: files
-      };
-      deferred.resolve(res);
-    }
-  });
-  return deferred.promise;
-};
-
-
-/**
  * Read comic.json file
  * @param {string} fsPath - Filesystem path of the folder where the file is
  * @returns {object} content in json format of the file
@@ -450,7 +304,7 @@ var readComicJson = function(fsPath) {
     else {
       try {
         obj = JSON.parse(data);
-         deferred.resolve(obj);
+        deferred.resolve(obj);
       }
       catch(e) {
         deferred.reject(e);
@@ -458,64 +312,6 @@ var readComicJson = function(fsPath) {
     }
   });
   return deferred.promise;
-};
-
-
-/**
- * Move and rename folder
- * @param {string} source - Filesystem path of the folder to move
- * @param {string} dest - Filesystem path where to move the folder to
- * @returns {string} Filesystem path of the destination
- */
-var moveFolder = function(source, dest) {
-  var deferred = Q.defer();
-  // mkdirp: creates all the necessary directories
-  // clobber: if dest exists, an error is returned
-  mv(source, dest, { mkdirp: true, clobber: false }, function(err) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      deferred.resolve(dest);
-    }
-  });
-  return deferred.promise;
-};
-
-
-/**
- * Copy a file or directory
- * @param {string} source - Filesystem path of the file/folder to copy
- * @param {string} dest - Filesystem path and name of the new file/folder
- * @returns {string} Filesystem path and name of the new file/folder
- */
-var copyFs = function(source, dest) {
-  var deferred = Q.defer();
-  fs.copy(source, dest, function(err) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      deferred.resolve(dest);
-    }
-  });
-  return deferred.promise;
-};
-
-
-/**
- * Check if file or directory exists
- * @param {string} fsPath - Path in the filesystem to test
- * @returns {boolean} true if it exists
- */
-var exists = function(fsPath) {
-  try {
-    fs.statSync(fsPath);
-    return true;
-  }
-  catch (e) {
-    return false;
-  }
 };
 
 
@@ -530,30 +326,6 @@ var sendMessage = function(type, obj) {
   };
   $.extend(msg, obj);
   iframeWin.postMessage(JSON.stringify(msg), serverUrl);
-};
-
-
-/**
- * Convert size in bytes to KB, MB, GB
- * from http://stackoverflow.com/a/18650828/471720
- * @param {number} bytes - Int number of bytes
- * @param {number} decimals - Number of decimals to show - not required
- * @returns {string} Formatted value
- */
-var formatBytes = function(bytes, decimals) {
-  if (bytes === 0) {
-    return '0 Byte';
-  }
-  var k = 1024;
-  // on Mac OS X use this
-  // http://www.macworld.com/article/1142471/snow_leopard_math.html
-  if (process.platform === 'darwin') {
-    k = 1000;
-  }
-  var dm = decimals + 1 || 3;
-  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  var i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
 
@@ -574,7 +346,7 @@ var downloadStatus = function(res, url, cb) {
   var current = 0;
   var currentPerc = 0;
   var prevCurrentPerc;
-  sendMessage('download-started', { message: formatBytes(total) });
+  sendMessage('download-started', { message: tools.formatBytes(total) });
   res.on('data', function(data) {
     current += data.length;
     currentPerc = parseInt(current * totalPerc, 10);
@@ -637,7 +409,7 @@ var removeEntry = function(id) {
   }
   var fsPath = projects[id].fsPath;
 
-  return removeFiles(fsPath)
+  return tools.removeFiles(fsPath)
     .then(function() {
       delete projects[id];
       sendMessage('deleted', { id: id });
@@ -658,7 +430,7 @@ var pAddComicUrl = function(url) {
 
   sendMessage('import', { message: 'started' });
 
-  return resolveUrl(url)
+  return tools.resolveUrl(url)
     .then(function(res) {
       var resolvedUrl = res;
       return downloadFile(resolvedUrl, TMP_DIR, newName);
@@ -668,8 +440,8 @@ var pAddComicUrl = function(url) {
     function(err) {
       // delete tmp files and folders
       // we are checking they exist because it depends on when the error was fired
-      if (exists(archive)) {
-        removeFiles(archive);
+      if (tools.exists(archive)) {
+        tools.removeFiles(archive);
       }
       sendMessage('error', { message: err.message });
       sendMessage('import', { message: 'error' });
@@ -688,14 +460,14 @@ var pAddComicFolder = function(fsPath) {
 
   sendMessage('import', { message: 'started' });
 
-  return zipFolder(fsPath, tmpPath)
+  return tools.zipFolder(fsPath, tmpPath)
     .then(pAddComicArchive,
   // handle errors
     function(err) {
       // delete tmp files and folders
       // we are checking they exist because it depends on when the error was fired
-      if (exists(tmpPath)) {
-        removeFiles(tmpPath);
+      if (tools.exists(tmpPath)) {
+        tools.removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
       sendMessage('import', { message: 'error' });
@@ -714,14 +486,14 @@ var pAddComicElcx = function(archive) {
 
   sendMessage('import', { message: 'started' });
 
-  return copyFs(archive, tmpPath)
+  return tools.copyFs(archive, tmpPath)
     .then(pAddComicArchive,
   // handle errors
     function(err) {
       // delete tmp files and folders
       // we are checking they exist because it depends on when the error was fired
-      if (exists(tmpPath)) {
-        removeFiles(tmpPath);
+      if (tools.exists(tmpPath)) {
+        tools.removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
       sendMessage('import', { message: 'error' });
@@ -744,15 +516,15 @@ var pAddComicArchive = function(archive) {
   sendMessage('import', { message: 'started' });
 
   // checksum file
-  return checksumFile(archive)
+  return tools.checksumFile(archive)
   // unzip file in tmp dir
     .then(function(res) {
       checksum = res;
-      return unzipFile(archive, tmpPath);
+      return tools.unzipFile(archive, tmpPath);
     })
   // delete tmp archive
     .then(function() {
-      return removeFiles(archive);
+      return tools.removeFiles(archive);
     })
   // read comic.json
     .then(function() {
@@ -763,7 +535,7 @@ var pAddComicArchive = function(archive) {
       comicJson = res;
       slug = S(comicJson.title).slugify().s + '_' + checksum;
       fsPath = path.join(LIB_DIR, slug);
-      return moveFolder(tmpPath, fsPath);
+      return tools.moveFolder(tmpPath, fsPath);
     })
   // add entry
     .then(function() {
@@ -777,11 +549,11 @@ var pAddComicArchive = function(archive) {
     function(err) {
       // delete tmp files and folders
       // we are checking they exist because it depends on when the error was fired
-      if (exists(archive)) {
-        removeFiles(archive);
+      if (tools.exists(archive)) {
+        tools.removeFiles(archive);
       }
-      if (exists(tmpPath)) {
-        removeFiles(tmpPath);
+      if (tools.exists(tmpPath)) {
+        tools.removeFiles(tmpPath);
       }
       sendMessage('error', { message: err.message });
       sendMessage('import', { message: 'error' });
@@ -814,10 +586,6 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'url') {
     pAddComicUrl(msg.url);
-  }
-
-  if (msg.type === 'open-int') {
-    openInt(msg.id);
   }
 
   if (msg.type === 'open-ext') {

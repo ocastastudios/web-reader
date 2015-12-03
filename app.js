@@ -81,7 +81,9 @@ nwgui.App.clearCache();
 // https://github.com/nwjs/nw.js/issues/2462
 var nativeMenuBar = new nwgui.Menu({ type: 'menubar' });
 try {
-  nativeMenuBar.createMacBuiltin('Electricomics Web Reader');
+  nativeMenuBar.createMacBuiltin('Electricomics Web Reader', {
+    hideEdit: true
+  });
   win.menu = nativeMenuBar;
 } catch (err) {
   // console.log(err.message);
@@ -134,18 +136,41 @@ var serverStart = function() {
     app.engine('.hbs', hbs.engine);
     app.set('view engine', '.hbs');
 
+    // public
     app.use(express.static(path.join(process.cwd(), 'public')));
+    // library
     app.use('/home', function(req, res) {
       var internal = tools.isInternal(req);
-      res.render('index', { library: projects, internal: internal });
+      res.render('index', { 
+        library: projects,
+        internal: internal
+      });
     });
-
+    // online store
+    app.use('/store', function(req, res) {
+      var internal = tools.isInternal(req);
+      res.render('index', { 
+        library: projects,
+        internal: internal
+      });
+    });
+    // about
+    app.use('/about', function(req, res) {
+      var internal = tools.isInternal(req);
+      res.render('index', { 
+        internal: internal
+      });
+    });
+    // ajax item
     app.use('/item', function(req, res) {
       var id = req.query.id;
       var library = {};
       library[id] = projects[id];
       var internal = tools.isInternal(req);
-      res.render('item', { library: library, internal: internal });
+      res.render('item', { 
+        library: library,
+        internal: internal
+      });
     });
 
     // all environments

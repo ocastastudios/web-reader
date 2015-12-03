@@ -81,9 +81,7 @@ nwgui.App.clearCache();
 // https://github.com/nwjs/nw.js/issues/2462
 var nativeMenuBar = new nwgui.Menu({ type: 'menubar' });
 try {
-  nativeMenuBar.createMacBuiltin('Electricomics Web Reader', {
-    hideEdit: true
-  });
+  nativeMenuBar.createMacBuiltin('Electricomics Web Reader');
   win.menu = nativeMenuBar;
 } catch (err) {
   // console.log(err.message);
@@ -101,7 +99,7 @@ try {
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var projects = {};
 var projectExt = options.ext;
-var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/home">HOME</a></ec-webreader-nav>';
+var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/index">HOME</a></ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
 var iframeWin = $mainFrame.get(0).contentWindow;
 var promisesLoadComics = [];
@@ -110,6 +108,7 @@ var downloadStreamInterrupted = false;
 
 var hbs = exphbs.create({
   extname: '.hbs',
+  defaultLayout: 'main',
   helpers: {
     breaklines: function(text) {
       text = hbs.handlebars.Utils.escapeExpression(text);
@@ -136,12 +135,13 @@ var serverStart = function() {
     app.engine('.hbs', hbs.engine);
     app.set('view engine', '.hbs');
 
-    // public
+    // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
     // library
-    app.use('/home', function(req, res) {
+    app.use('/index', function(req, res) {
       var internal = tools.isInternal(req);
-      res.render('index', { 
+      res.render('library', {
+        title: 'Library',
         library: projects,
         internal: internal
       });
@@ -149,15 +149,24 @@ var serverStart = function() {
     // online store
     app.use('/store', function(req, res) {
       var internal = tools.isInternal(req);
-      res.render('index', { 
-        library: projects,
+      res.render('store', {
+        title: 'Store',
         internal: internal
       });
     });
     // about
     app.use('/about', function(req, res) {
       var internal = tools.isInternal(req);
-      res.render('index', { 
+      res.render('about', {
+        title: 'About',
+        internal: internal
+      });
+    });
+    // add
+    app.use('/add', function(req, res) {
+      var internal = tools.isInternal(req);
+      res.render('add', {
+        title: 'Add',
         internal: internal
       });
     });
@@ -167,7 +176,8 @@ var serverStart = function() {
       var library = {};
       library[id] = projects[id];
       var internal = tools.isInternal(req);
-      res.render('item', { 
+      res.render('item', {
+        layout: false,
         library: library,
         internal: internal
       });

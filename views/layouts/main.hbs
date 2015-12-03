@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Electricomics Web Reader</title>
+  <title>Electricomics Web Reader {{title}}</title>
   <link rel="stylesheet" href="js/lib/jquery-ui/jquery-ui.min.css">
   <link rel="stylesheet" href="fonts/muli/stylesheet.css">
   <link rel="stylesheet" href="css/style.css">
@@ -45,30 +45,18 @@ var receiveMessage = function(msg) {
 };
 </script>
 
-{{!-- nothing should be included as a partial template above this line --}}
-{{!-- any included partial template should be independent and its exclusion should not break the main page --}}
+<h1>Electricomics</h1>
 
-<header>
-  <h1>Electricomics</h1>
-</header>
+<iframe src="/a-is-for-asterion_96ff97403c7caa29951d3d66dedabe42cd0d5a9d" frameborder="0"></iframe>
 
-{{#if internal}}
-<section>
-  <h2>Load Comic</h2>
-  {{>load}}
-</section>
-{{/if}}
+{{>nav}}
 
-<section>
-  <h2>Your Library</h2>
-  {{>library}}
-</section>
+{{{body}}}
 
 <div class="dialog" id="dialog-error" title="Error">
   <p>Error</p>
 </div>
 
-{{!-- nothing should be included as a partial template under this line --}}
 <script>
 window.addEventListener('message', function(e) {
   if (e.origin !== 'file://') {

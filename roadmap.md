@@ -26,3 +26,20 @@
 * [x] read '/n' in the comic.json
 * [ ] landscape/portrait? how?
 * [x] add archive ui should copy the zip to the tmp folder and its own function
+* [ ] get messages from us
+* [ ] google analytics?
+
+version:
+* check if online
+* if online, retrieve version.js (or similar)
+* if there is a new version, show message
+
+communication:
+* check if online
+* if online, retrive communications.js (or similar)
+
+online/offline
+* when offline
+  * download from url should be disabled
+  * an offline status should be shown in the market page
+  * download comic buttons in market page should be disabled

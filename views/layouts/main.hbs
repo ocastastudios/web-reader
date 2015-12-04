@@ -42,10 +42,13 @@ var receiveMessage = function(msg) {
   if (msg.type === 'error') {
     dialogError(msg.message);
   }
+  if (msg.type === 'online') {
+    $('#online').toggleClass('online', msg.status);
+  }
 };
 </script>
 
-<h1>Electricomics</h1>
+<h1>Electricomics <span id="online"></span></h1>
 
 <iframe src="/a-is-for-asterion_96ff97403c7caa29951d3d66dedabe42cd0d5a9d" frameborder="0"></iframe>
 

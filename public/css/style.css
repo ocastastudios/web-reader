@@ -57,3 +57,13 @@ input[type=file] {
 .progressbar {
   display: none;
 }
+
+#online:after {
+  background: #F00;
+  color: #FFF;
+  content: 'offline';
+}
+#online.online:after {
+  background: green;
+  content: 'online';
+}

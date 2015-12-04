@@ -596,6 +596,29 @@ var pAddComicArchive = function(archive) {
 };
 
 
+/**
+ * Check if online
+ * @returns {boolean} True if online
+ */
+var isOnline = function() {
+  return tools.checkOnline()
+    .then(function(res) {
+      sendMessage('online', { status: res });
+      return res;
+    },
+    function(err) {
+      sendMessage('online', { status: false });
+      return err;
+    });
+};
+window.addEventListener('offline', function() {
+  isOnline();
+});
+window.addEventListener('online', function() {
+  isOnline();
+});
+
+
 // Listener for the postMessages from the iframes
 window.addEventListener('message', function(e) {
   // check that that the messages come from our local server

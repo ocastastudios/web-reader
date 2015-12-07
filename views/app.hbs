@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electricomics Web Reader</title>
+  <link rel="stylesheet" href="js/lib/jquery-ui/jquery-ui.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="wrapper">
+  <header class="main-header">
+    <object type="image/svg+xml" data="images/title.svg" class="main-logo">
+      <h1 class="main-title">Electricomics</h1>
+    </object>
+
+    <nav class="main-nav">
+      {{>nav}}
+    </nav>
+  </header>
+
+  <main class="main-content">
+
+
+  <!-- Store -->
+    <section class="section" id="store">
+      <p>As more Electricomics are made, we will put their links up here.<br>
+  If you have a comic you want us to include please use the <a href="#">contact form</a> or tweet it <a href="#">@electricomics</a> and we will get it on this page for all to enjoy.<br>
+  If it was made for a specific challenge, please # tag it when you tweet or say in your message, so it ends up in the right place.<br>
+  Thank you for using the <a href="#">Generator</a> to make your comics, and for supporting Electricomics!</p>
+      <ul id="store__list" class="list">
+        {{>store}}
+      </ul>
+    </section>
+
+    <script id="store__list--template" type="text/x-handlebars-template">
+{{{rawpartial "store"}}}
+    </script>
+
+    <section class="section" id="store-item">
+      <div id="store-item__wrapper"></div>
+    </section>
+
+    <script id="store-item__wrapper--template" type="text/x-handlebars-template">
+{{{rawpartial "store-item"}}}
+    </script>
+
+
+  <!-- Library -->
+    <section class="section" id="library">
+      <ul id="library__list" class="list">
+        {{>library}}
+      </ul>
+    </section>
+
+    <script id="library__list--template" type="text/x-handlebars-template">
+{{{rawpartial "library"}}}
+    </script>
+
+    <section class="section" id="library-item">
+      <div id="library-item__wrapper"></div>
+    </section>
+
+    <script id="library-item__wrapper--template" type="text/x-handlebars-template">
+{{{rawpartial "library-item"}}}
+    </script>
+
+
+  <!-- Add -->
+    <section class="section" id="add">
+      {{>add}}
+
+      <div id="added">
+        {{>added}}
+      </div>
+    </section>
+
+    <script id="added--template" type="text/x-handlebars-template">
+{{{rawpartial "added"}}}
+    </script>
+
+
+  <!-- About -->
+    <section class="section" id="about">
+      {{>about}}
+    </section>
+
+
+  </main>
+  
+  {{!-- <iframe src="/a-is-for-asterion_96ff97403c7caa29951d3d66dedabe42cd0d5a9d" frameborder="0"></iframe> --}}
+
+  <div class="dialog" id="dialog-error" title="Error">
+    <p>Error</p>
+  </div>
+</div>
+
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/jquery-ui/jquery-ui.js"></script>
+<script src="js/lib/handlebars.js"></script>
+<script src="js/lib/director.js"></script>
+<script src="js/data.js"></script>
+<script src="js/features.js"></script>
+<script src="js/app.js"></script>
+<script src="js/add.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{{#with store}}
+{{#with data}}
+
+<div class="more__item" id="store-{{@key}}">
+  <div class="more__item__img">
+    <img src="images/cover.png">
+  </div>
+  <div class="more__item__content">
+    <h2>{{title}}</h2>
+    
+    <div>http://j.mp/elcx-hammer</div>
+    <div>version: {{version}}</div>
+    <div>published: {{publish_date}}</div>
+    
+    <p class="more__item__summary">{{breaklines summary}}</p>
+    {{#if creators}}
+    <ul class="more__item__creators">
+      {{#each creators}}
+      <li class="more__item__creator">
+        <span class="role more__item__role">{{role}}:</span>
+        <span class="author more__item__author">{{name}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    <div class="more__item__buttons">
+      <a href="{{../serverPath}}" class="button">Download</a>
+      <a href="javascript:history.go(-1);" class="button">Back to store</a>
+    </div>
+  </div>
+</div>
+
+{{/with}}
+{{/with}}

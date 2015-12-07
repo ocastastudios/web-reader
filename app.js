@@ -108,12 +108,16 @@ var downloadStreamInterrupted = false;
 
 var hbs = exphbs.create({
   extname: '.hbs',
-  defaultLayout: 'main',
   helpers: {
     breaklines: function(text) {
       text = hbs.handlebars.Utils.escapeExpression(text);
       text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
       return new hbs.handlebars.SafeString(text);
+    },
+    rawpartial: function(partialName) {
+      var file = path.join(process.cwd(), hbs.partialsDir, partialName + hbs.extname);
+      var template = fs.readFileSync(file, 'utf8');
+      return template;
     }
   }
 });
@@ -137,36 +141,13 @@ var serverStart = function() {
 
     // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
-    // library
+    // app
     app.use('/index', function(req, res) {
       var internal = tools.isInternal(req);
-      res.render('library', {
-        title: 'Library',
+      res.render('app', {
         library: projects,
-        internal: internal
-      });
-    });
-    // online store
-    app.use('/store', function(req, res) {
-      var internal = tools.isInternal(req);
-      res.render('store', {
-        title: 'Store',
-        internal: internal
-      });
-    });
-    // about
-    app.use('/about', function(req, res) {
-      var internal = tools.isInternal(req);
-      res.render('about', {
-        title: 'About',
-        internal: internal
-      });
-    });
-    // add
-    app.use('/add', function(req, res) {
-      var internal = tools.isInternal(req);
-      res.render('add', {
-        title: 'Add',
+        store: projects,
+        added: projects,
         internal: internal
       });
     });

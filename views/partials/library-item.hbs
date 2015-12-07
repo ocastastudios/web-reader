@@ -1,0 +1,49 @@
+{{#with library}}
+{{#with data}}
+
+<div class="more__item" id="library-{{@key}}">
+  <div class="more__item__img">
+    <img src="images/cover.png">
+
+    <div class="more__item__buttons more__item__buttons--library">
+      <a href="#" class="button">Start reading</a>
+      <a href="javascript:history.go(-1);" class="button">Back to library</a>
+      <input type="button" class="button" value="View files">
+      <button class="button">Delete content</button>
+    </div>
+  </div>
+  <div class="more__item__content">
+    <h2>{{title}}</h2>
+    
+    <div>http://j.mp/elcx-hammer</div>
+    <div>version: {{version}}</div>
+    <div>published: {{publish_date}}</div>
+    
+    <p class="more__item__summary">{{breaklines summary}}</p>
+    {{#if creators}}
+    <ul class="more__item__creators">
+      {{#each creators}}
+      <li class="more__item__creator">
+        <span class="role more__item__role">{{role}}:</span>
+        <span class="author more__item__author">{{name}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    <ul class="more__item__features">
+    {{#each config.features}}
+      <li class="more__item__feature">
+        <h3 class="more__item__feature__title">{{this}}</h3>
+        <div class="more__item__feature__img">
+          <img src="images/{{this}}.svg">
+        </div>
+        <p class="more__item__feature__desc">{{lookup ../../../features this}}</p>
+      </li>
+    {{/each}}
+    </ul>
+  </div>
+</div>
+
+{{/with}}
+{{/with}}

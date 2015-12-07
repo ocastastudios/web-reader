@@ -1,0 +1,59 @@
+*, *:before, *:after {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+html,
+body,
+h1,
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+}
+header,
+nav,
+details,
+summary {
+  display: block;
+}
+li {
+  list-style: none;
+}
+
+body {
+  background: #000;
+  color: #FFF;
+}
+body, input, textarea, select, button {
+  font-family: 'muli', Arial, sans-serif;
+}
+
+input[type=file] {
+  /*display: none;*/
+}
+
+.splash-screen {
+  background: #000 url(../images/splash.svg) no-repeat scroll center center;
+  background-size: 50%;
+}
+
+.iframe-wrapper {
+  height: 100%;
+  position: relative;
+}
+.iframe {
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  transition: opacity 1s;
+}
+
+.dialog,
+.progressbar {
+  display: none;
+}

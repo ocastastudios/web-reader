@@ -64,9 +64,9 @@ var App = {
     this.navs = $('.main-nav__link');
     this.libraryListTemplate = Handlebars.compile($('#library__list--template').html());
     this.libraryItemTemplate = Handlebars.compile($('#library-item__wrapper--template').html());
-    this.storeListTemplate = Handlebars.compile($('#store__list--template').html());
-    this.storeItemTemplate = Handlebars.compile($('#store-item__wrapper--template').html());
-    this.addedTemplate = Handlebars.compile($('#added--template').html());
+    this.storeListTemplate = Handlebars.compile($('#store__list--template').html() || '');
+    this.storeItemTemplate = Handlebars.compile($('#store-item__wrapper--template').html() || '');
+    this.addedTemplate = Handlebars.compile($('#added--template').html() || '');
     // this.render();
     // this.bindEvents();
 

@@ -14,7 +14,9 @@
     <object type="image/svg+xml" data="images/title.svg" class="main-logo">
       <h1 class="main-title">Electricomics</h1>
     </object>
+    {{#if internal}}
     <span id="online"></span>
+    {{/if}}
 
     <nav class="main-nav">
       {{>nav}}
@@ -24,6 +26,7 @@
   <main class="main-content">
 
 
+  {{#if internal}}
   <!-- Store -->
     <section class="section" id="store">
       <p>As more Electricomics are made, we will put their links up here.<br>
@@ -46,6 +49,7 @@
     <script id="store-item__wrapper--template" type="text/x-handlebars-template">
 {{{rawpartial "store-item"}}}
     </script>
+  {{/if}}
 
 
   <!-- Library -->
@@ -68,6 +72,7 @@
     </script>
 
 
+  {{#if internal}}
   <!-- Add -->
     <section class="section" id="add">
       {{>add}}
@@ -80,6 +85,7 @@
     <script id="added--template" type="text/x-handlebars-template">
 {{{rawpartial "added"}}}
     </script>
+  {{/if}}
 
 
   <!-- About -->

@@ -1,13 +1,17 @@
 <ul class="main-nav__list">
+  {{#if internal}}
   <li class="main-nav__item">
     <a class="main-nav__link" href="#/store">Store</a>
   </li>
+  {{/if}}
   <li class="main-nav__item">
     <a class="main-nav__link" href="#/library">Library</a>
   </li>
+  {{#if internal}}
   <li class="main-nav__item">
     <a class="main-nav__link" href="#/add">Manage</a>
   </li>
+  {{/if}}
   <li class="main-nav__item">
     <a class="main-nav__link" href="#/about">About</a>
   </li>

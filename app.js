@@ -148,7 +148,7 @@ var serverStart = function() {
         library: projects,
         store: projects,
         added: projects,
-        internal: internal
+        internal: true
       });
     });
     // ajax item

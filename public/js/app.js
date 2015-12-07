@@ -124,3 +124,21 @@ var App = {
 };
 
 App.init();
+
+window.addEventListener('message', function(e) {
+  if (e.origin !== 'file://') {
+    return false;
+  }
+  var msg;
+  try {
+    msg = JSON.parse(e.data);
+  }
+  catch (err) {
+    console.error(err);
+    return false;
+  }
+
+  receiveMessage(msg);
+});
+
+sendMessage('online');

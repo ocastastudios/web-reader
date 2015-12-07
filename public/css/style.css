@@ -413,6 +413,11 @@ label {
 }
 
 /* Online offline status */
+#online {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
 #online:after {
   background: #F00;
   color: #FFF;

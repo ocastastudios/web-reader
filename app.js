@@ -642,6 +642,10 @@ window.addEventListener('message', function(e) {
   if (msg.type === 'interrupt') {
     downloadStream.emit('interrupt');
   }
+
+  if (msg.type === 'online') {
+    isOnline();
+  }
 }, false);
 
 

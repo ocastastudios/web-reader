@@ -10,15 +10,8 @@ var $progressbarUrl = $('#progressbar-url');
 var $progressLabelUrl = $progressbarUrl.find('.progress-label');
 var totalDownload;
 
-var addhttp = function(url) {
-  if (!/^(f|ht)tps?:\/\//i.test(url)) {
-    url = 'http://' + url;
-  }
-  return url;
-};
-
 var remoteStart = function() {
-  var url = addhttp($openRemoteUrl.val());
+  var url = $openRemoteUrl.val();
   if (url !== '') {
     sendMessage('url', { url: url });
   }

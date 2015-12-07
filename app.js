@@ -440,13 +440,14 @@ var removeEntry = function(id) {
  * @param {string} url - URL to download
  */
 var pAddComicUrl = function(url) {
+  var myUrl = tools.addhttp(url);
   var tmpName = Date.now() + '';
   var newName = tmpName + projectExt;
   var archive = path.join(TMP_DIR, newName);
 
   sendMessage('import', { message: 'started' });
 
-  return tools.resolveUrl(url)
+  return tools.resolveUrl(myUrl)
     .then(function(res) {
       var resolvedUrl = res;
       return downloadFile(resolvedUrl, TMP_DIR, newName);

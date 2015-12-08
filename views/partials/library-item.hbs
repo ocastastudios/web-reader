@@ -1,9 +1,9 @@
-{{#with library}}
+{{#with item}}
 {{#with data}}
 
-<div class="more__item" id="library-{{@key}}">
+<div class="more__item" id="library-{{../../id}}">
   <div class="more__item__img">
-    <img src="images/cover.png">
+    <img src="/{{../../id}}/cover.png">
 
     <div class="more__item__buttons more__item__buttons--library">
       <a href="#" class="button">Start reading</a>

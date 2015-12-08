@@ -1,14 +1,18 @@
-{{#with store}}
+{{#with item}}
 {{#with data}}
 
-<div class="more__item" id="store-{{@key}}">
+<div class="more__item" id="store-{{../../id}}">
   <div class="more__item__img">
-    <img src="images/cover.png">
+    {{#if ../cover}}
+    <img src="/store/{{../../cover}}">
+    {{else}}
+    <img src="/images/cover.png">
+    {{/if}}
   </div>
   <div class="more__item__content">
     <h2>{{title}}</h2>
     
-    <div>http://j.mp/elcx-hammer</div>
+    <div>{{../url}}</div>
     <div>version: {{version}}</div>
     <div>published: {{publish_date}}</div>
     

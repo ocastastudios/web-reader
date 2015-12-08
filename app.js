@@ -46,8 +46,8 @@ var osenv = require('osenv');
 var Q = require('q');
 var junk = require('junk');
 var S = require('string');
-var moment = require('moment');
 var tools = require('./lib/tools');
+var Store = require('./lib/store');
 
 // settings
 // they may end up in the advanced setting panel
@@ -106,6 +106,7 @@ var iframeWin = $mainFrame.get(0).contentWindow;
 var promisesLoadComics = [];
 var downloadStream;
 var downloadStreamInterrupted = false;
+var store;
 
 var hbs = exphbs.create({
   extname: '.hbs',
@@ -119,6 +120,12 @@ var hbs = exphbs.create({
       var file = path.join(process.cwd(), hbs.partialsDir, partialName + hbs.extname);
       var template = fs.readFileSync(file, 'utf8');
       return template;
+    },
+    eq: function(a, b, options) {
+      return a === b ? options.fn(this) : options.inverse(this);
+    },
+    json: function(context) {
+      return JSON.stringify(context);
     }
   }
 });
@@ -147,7 +154,7 @@ var serverStart = function() {
       var internal = tools.isInternal(req);
       res.render('app', {
         library: projects,
-        store: projects,
+        store: store.data.library,
         added: projects,
         internal: true
       });
@@ -678,6 +685,7 @@ win.on('close', function() {
  */
 var init = function() {
   $mainFrame.attr('src', serverUrl + '/loading.html');
+  store = new Store();
   loadExtComics();
   return Q.all(promisesLoadComics)
     .then(function() {

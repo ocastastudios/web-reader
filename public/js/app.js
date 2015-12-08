@@ -57,9 +57,9 @@ var util = {
 
 var App = {
   init: function() {
-    this.library = util.store('projects');
-    this.store = util.store('projects');
-    this.added = util.store('projects');
+    this.library = util.store('library');
+    this.store = util.store('store');
+    this.added = util.store('added');
     this.sections = $('.section');
     this.navs = $('.main-nav__link');
     this.libraryListTemplate = Handlebars.compile($('#library__list--template').html());
@@ -106,7 +106,7 @@ var App = {
     $('#library__list').html(this.libraryListTemplate({library: this.library}));
   },
   renderLibraryItem: function(item) {
-    $('#library-item__wrapper').html(this.libraryItemTemplate({library: this.library[item], features: features}));
+    $('#library-item__wrapper').html(this.libraryItemTemplate({id: item, item: this.library[item], features: features}));
     this.sections.hide();
     $('#library-item').show();
   },
@@ -114,7 +114,7 @@ var App = {
     $('#store__list').html(this.storeListTemplate({store: this.store}));
   },
   renderStoreItem: function(item) {
-    $('#store-item__wrapper').html(this.storeItemTemplate({store: this.store[item], features: features}));
+    $('#store-item__wrapper').html(this.storeItemTemplate({id: item, item: this.store[item], features: features}));
     this.sections.hide();
     $('#store-item').show();
   },

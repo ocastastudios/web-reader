@@ -5,3 +5,5 @@ comics
 *.zip
 *.elcx
 .idea
+store
+tmp_store

@@ -279,21 +279,13 @@ var persConnectInject = function(req, res, next) {
  */
 var downloadFile = function(url, dest, newName) {
   var deferred = Q.defer();
-  var rename = function(name) {
-    if (newName != null && newName !== '') {
-      return newName;
-    }
-    else {
-      return name;
-    }
-  };
-  new Download().get(url).dest(dest).rename(rename(name)).use(downloadStatus).run(function(err, files) {
+  new Download().get(url).dest(dest).rename(newName).use(downloadStatus).run(function(err, files) {
     if (err) {
       deferred.reject(err);
     }
     else {
       if (!downloadStreamInterrupted) {
-        deferred.resolve(files[0].history[2]);
+        deferred.resolve(files[0].history[ files[0].history.length - 1 ]);
       }
       else {
         downloadStreamInterrupted = false;

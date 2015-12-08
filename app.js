@@ -46,6 +46,7 @@ var osenv = require('osenv');
 var Q = require('q');
 var junk = require('junk');
 var S = require('string');
+var moment = require('moment');
 var tools = require('./lib/tools');
 
 // settings

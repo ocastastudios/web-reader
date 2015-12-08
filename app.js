@@ -55,7 +55,8 @@ var options = {
   host: '127.0.0.1',
   port: 8123,
   dir: 'Electricomics Library',
-  ext: '.elcx'
+  ext: '.elcx',
+  storeUrl: 'http://localhost:8000'
 };
 
 var HOME_DIR = osenv.home();
@@ -311,23 +312,7 @@ var downloadFile = function(url, dest, newName) {
  */
 var readComicJson = function(fsPath) {
   var file = path.join(fsPath, 'comic.json');
-  var deferred = Q.defer();
-  var obj;
-  fs.readFile(file, function(err, data) {
-    if (err) {
-      deferred.reject(err);
-    }
-    else {
-      try {
-        obj = JSON.parse(data);
-        deferred.resolve(obj);
-      }
-      catch(e) {
-        deferred.reject(e);
-      }
-    }
-  });
-  return deferred.promise;
+  return tools.readJson(file);
 };
 
 
@@ -447,11 +432,7 @@ var pAddComicUrl = function(url) {
 
   sendMessage('import', { message: 'started' });
 
-  return tools.resolveUrl(myUrl)
-    .then(function(res) {
-      var resolvedUrl = res;
-      return downloadFile(resolvedUrl, TMP_DIR, newName);
-    })
+  return downloadFile(myUrl, TMP_DIR, newName)
     .then(pAddComicArchive,
   // handle errors
     function(err) {
@@ -470,26 +451,26 @@ var pAddComicUrl = function(url) {
  * Import comic from local folder
  * @param {string} fsPath - Filesystem path of the folder
  */
-var pAddComicFolder = function(fsPath) {
-  var tmpName = Date.now() + '';
-  var newName = tmpName + projectExt;
-  var tmpPath = path.join(TMP_DIR, newName);
+// var pAddComicFolder = function(fsPath) {
+//   var tmpName = Date.now() + '';
+//   var newName = tmpName + projectExt;
+//   var tmpPath = path.join(TMP_DIR, newName);
 
-  sendMessage('import', { message: 'started' });
+//   sendMessage('import', { message: 'started' });
 
-  return tools.zipFolder(fsPath, tmpPath)
-    .then(pAddComicArchive,
-  // handle errors
-    function(err) {
-      // delete tmp files and folders
-      // we are checking they exist because it depends on when the error was fired
-      if (tools.exists(tmpPath)) {
-        tools.removeFiles(tmpPath);
-      }
-      sendMessage('error', { message: err.message });
-      sendMessage('import', { message: 'error' });
-    });
-};
+//   return tools.zipFolder(fsPath, tmpPath)
+//     .then(pAddComicArchive,
+//   // handle errors
+//     function(err) {
+//       // delete tmp files and folders
+//       // we are checking they exist because it depends on when the error was fired
+//       if (tools.exists(tmpPath)) {
+//         tools.removeFiles(tmpPath);
+//       }
+//       sendMessage('error', { message: err.message });
+//       sendMessage('import', { message: 'error' });
+//     });
+// };
 
 
 /**
@@ -616,9 +597,9 @@ window.addEventListener('message', function(e) {
     return false;
   }
 
-  if (msg.type === 'local-folder') {
-    pAddComicFolder(msg.path);
-  }
+  // if (msg.type === 'local-folder') {
+  //   pAddComicFolder(msg.path);
+  // }
 
   if (msg.type === 'local-archive') {
     pAddComicElcx(msg.path);
@@ -685,7 +666,7 @@ win.on('close', function() {
  */
 var init = function() {
   $mainFrame.attr('src', serverUrl + '/loading.html');
-  store = new Store();
+  store = new Store(options.storeUrl);
   loadExtComics();
   return Q.all(promisesLoadComics)
     .then(function() {

@@ -1,8 +1,9 @@
-{{#each library}}
+{{#each libraryList}}
+{{#with (lookup ../library this)}}
 {{#with data}}
-<li class="list__item" id="list__item--{{@key}}">
+<li class="list__item id--{{../../this}}">
   <div class="list__item__img">
-    <img src="/{{@key}}/cover.png">
+    <img src="/{{../../this}}/cover.png">
   </div>
   <div class="list__item__content">
     <h2 class="list__item__title">{{title}}</h2>
@@ -15,9 +16,10 @@
     </ul>
     {{/if}}
     <div class="list__item__buttons">
-      <a href="#/library/{{@key}}" class="button">More info</a>
+      <a href="#/library-item/{{../../this}}" class="button">More info</a>
     </div>
   </div>
 </li>
+{{/with}}
 {{/with}}
 {{/each}}

@@ -58,6 +58,7 @@ var util = {
 var App = {
   init: function() {
     this.library = util.store('library');
+    this.libraryList = util.store('libraryList');
     this.store = util.store('store');
     this.added = util.store('added');
     this.sections = $('.section');
@@ -86,8 +87,12 @@ var App = {
           this.section = section;
           this.showSection(item);
         }
-        if (section === 'library') {
+        if (section === 'library-item') {
           this.renderLibraryItem(item);
+        }
+        if (section === 'library') {
+          this.section = section;
+          this.showSection(item);
         }
       }.bind(this)
     }).init();
@@ -124,7 +129,7 @@ var App = {
     return {};
   },
   renderLibraryList: function() {
-    $('#library__list').html(this.libraryListTemplate({library: this.library}));
+    $('#library__list').html(this.libraryListTemplate({library: this.library, libraryList: this.libraryList}));
   },
   renderLibraryItem: function(item) {
     $('#library-item__wrapper').html(this.libraryItemTemplate({id: item, item: this.library[item], features: features}));

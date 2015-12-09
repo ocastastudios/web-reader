@@ -100,6 +100,7 @@ try {
 
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var projects = {};
+var projectsList = [];
 var projectExt = options.ext;
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/index">HOME</a></ec-webreader-nav>';
 var $mainFrame = $('#main-iframe');
@@ -155,23 +156,24 @@ var serverStart = function() {
       var internal = tools.isInternal(req);
       res.render('app', {
         library: projects,
+        libraryList: projectsList,
         store: store.data,
         added: projects,
         internal: true
       });
     });
     // ajax item
-    app.use('/item', function(req, res) {
-      var id = req.query.id;
-      var library = {};
-      library[id] = projects[id];
-      var internal = tools.isInternal(req);
-      res.render('item', {
-        layout: false,
-        library: library,
-        internal: internal
-      });
-    });
+    // app.use('/item', function(req, res) {
+    //   var id = req.query.id;
+    //   var library = {};
+    //   library[id] = projects[id];
+    //   var internal = tools.isInternal(req);
+    //   res.render('item', {
+    //     layout: false,
+    //     library: library,
+    //     internal: internal
+    //   });
+    // });
 
     // all environments
     app.set('port', options.port);
@@ -227,6 +229,7 @@ var readComicFolder = function(fsPath) {
     .then(function(res) {
       var entry = addEntry(res, fsPath);
       projects[entry.id] = entry.o;
+      projectsList.push(entry.id);
     }, function(err) {
       console.error(err);
     });
@@ -413,6 +416,7 @@ var removeEntry = function(id) {
   return tools.removeFiles(fsPath)
     .then(function() {
       delete projects[id];
+      projectsList.splice(projectsList.indexOf(id), 1);
       sendMessage('deleted', { id: id });
     }, function(err) {
       sendMessage('error', { message: err.message });
@@ -539,6 +543,7 @@ var pAddComicArchive = function(archive) {
     .then(function() {
       var entry = addEntry(comicJson, fsPath);
       projects[entry.id] = entry.o;
+      projectsList.push(entry.id);
       // tell to load data in UI page
       sendMessage('add-item', { id: entry.id });
       sendMessage('import', { message: 'completed' });

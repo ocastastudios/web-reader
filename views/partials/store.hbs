@@ -1,6 +1,6 @@
 {{#each store.library}}
 {{#with data}}
-<li class="list__item" id="list__item--{{../id}}">
+<li class="list__item id--{{../id}}">
   <div class="list__item__img">
     {{#if ../cover}}
     <img src="/store/{{../../cover}}">
@@ -19,7 +19,7 @@
     </ul>
     {{/if}}
     <div class="list__item__buttons">
-      <a href="#/store/{{../id}}" class="button">More info</a>
+      <a href="#/store-item/{{../id}}" class="button">More info</a>
     </div>
   </div>
 </li>

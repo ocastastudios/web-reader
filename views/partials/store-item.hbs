@@ -12,9 +12,9 @@
   <div class="more__item__content">
     <h2>{{title}}</h2>
     
-    <div>{{../url}}</div>
-    <div>version: {{version}}</div>
-    <div>published: {{publish_date}}</div>
+    <div class="more__item__data">{{../url}}</div>
+    <div class="more__item__data">version: {{version}}</div>
+    <div class="more__item__data">published: {{publish_date}}</div>
     
     <p class="more__item__summary">{{breaklines summary}}</p>
     {{#if creators}}
@@ -30,7 +30,7 @@
 
     <div class="more__item__buttons">
       <a href="{{../serverPath}}" class="button">Download</a>
-      <a href="javascript:history.go(-1);" class="button">Back to store</a>
+      <a href="#/store/{{../id}}" class="button">Back to store</a>
     </div>
   </div>
 </div>

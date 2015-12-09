@@ -242,7 +242,8 @@ label {
 
 /* More info */
 .more__item {
-
+  display: table;
+  width: 100%;
 }
 .more__item__img {
   display: table-cell;
@@ -257,6 +258,9 @@ label {
   display: table-cell;
   padding-left: 30px;
   vertical-align: top;
+}
+.more__item__data {
+  padding: 0.25em 0;
 }
 .more__item__summary {
   font-size: 16px;

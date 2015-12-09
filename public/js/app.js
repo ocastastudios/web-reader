@@ -79,8 +79,12 @@ var App = {
     
     new Router({
       '/:section/:item': function (section, item) {
-        if (section === 'store') {
+        if (section === 'store-item') {
           this.renderStoreItem(item);
+        }
+        if (section === 'store') {
+          this.section = section;
+          this.showSection(item);
         }
         if (section === 'library') {
           this.renderLibraryItem(item);
@@ -96,11 +100,19 @@ var App = {
     this.renderStoreList();
     this.renderAdded();
   },
-  showSection: function() {
+  showSection: function(item) {
+    var s = this.section;
     this.sections.hide()
       .filter('#' + this.section).show();
     this.navs.toggleClass('main-nav__link--selected', false)
       .filter('[href="#/' + this.section + '"]').toggleClass('main-nav__link--selected', true);
+    if (item) {
+      setTimeout(function() {
+        $('body').animate({
+          scrollTop: $('#' + s).find('.id--' + item).offset().top - 150
+        }, 0);
+      }, 0);
+    }
   },
   getStoreItem: function(item) {
     var lib = this.store.library;

@@ -1,8 +1,8 @@
-/* global $, sendMessage, receiveMessage */
+/* global $, $document, sendMessage, receiveMessage */
 
 var $currentOpen;
 
-// Remote URL
+// Remote URL from add
 var $openRemoteForm = $('#open-remote-form');
 var $openRemoteUrl = $('#open-remote-url');
 var $openRemoteStop = $('#open-remote-stop');
@@ -10,8 +10,7 @@ var $progressbarUrl = $('#progressbar-url');
 var $progressLabelUrl = $progressbarUrl.find('.progress-label');
 var totalDownload;
 
-var remoteStart = function() {
-  var url = $openRemoteUrl.val();
+var remoteStart = function(url) {
   if (url !== '') {
     sendMessage('url', { url: url });
   }
@@ -38,7 +37,8 @@ $openRemoteForm.on('submit', function(e) {
   console.log('submit');
   e.preventDefault();
   $currentOpen = $openRemoteForm;
-  remoteStart();
+  var url = $openRemoteUrl.val();
+  remoteStart(url);
 });
 $openRemoteStop.on('click', function() {
   sendMessage('interrupt');
@@ -56,6 +56,14 @@ $progressbarUrl.progressbar({
   complete: function() {
     $progressLabelUrl.text('Complete!');
   }
+});
+
+
+// Remote URL from store
+$document.on('click', '.js-store-item-download', function() {
+  var $this = $(this);
+  var url = $this.data('url');
+  remoteStart(url);
 });
 
 

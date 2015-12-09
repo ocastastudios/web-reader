@@ -1,5 +1,7 @@
 /*global $, Handlebars, Router */
 
+var $document = $(document);
+
 var sendMessage = function(type, obj) {
   var msg = {
     type: type
@@ -82,6 +84,7 @@ var App = {
       '/:section/:item': function (section, item) {
         if (section === 'store-item') {
           this.renderStoreItem(item);
+          this.toggleNav('store');
         }
         if (section === 'store') {
           this.section = section;
@@ -89,6 +92,7 @@ var App = {
         }
         if (section === 'library-item') {
           this.renderLibraryItem(item);
+          this.toggleNav('library');
         }
         if (section === 'library') {
           this.section = section;
@@ -105,12 +109,15 @@ var App = {
     this.renderStoreList();
     this.renderAdded();
   },
+  toggleNav: function(section) {
+    this.navs.toggleClass('main-nav__link--selected', false)
+      .filter('[href="#/' + section + '"]').toggleClass('main-nav__link--selected', true);
+  },
   showSection: function(item) {
     var s = this.section;
     this.sections.hide()
       .filter('#' + this.section).show();
-    this.navs.toggleClass('main-nav__link--selected', false)
-      .filter('[href="#/' + this.section + '"]').toggleClass('main-nav__link--selected', true);
+    this.toggleNav(this.section);
     if (item) {
       setTimeout(function() {
         $('body').animate({

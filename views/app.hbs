@@ -106,7 +106,7 @@
 <script>
 var library = {{{json library}}};
 var libraryList = {{{json libraryList}}};
-var store = { library: [] };
+var store = {{{json store}}};
 var added = {{{json added}}};
 </script>
 
@@ -117,15 +117,5 @@ var added = {{{json added}}};
 <script src="js/features.js"></script>
 <script src="js/app.js"></script>
 <script src="js/add.js"></script>
-
-<script>
-$.ajax({
-  url: '/store/comics.json',
-  success: function(data) {
-    store = data;
-    App.store = store;
-  }
-})
-</script>
 </body>
 </html>

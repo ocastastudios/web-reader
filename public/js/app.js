@@ -102,6 +102,14 @@ var App = {
     this.navs.toggleClass('main-nav__link--selected', false)
       .filter('[href="#/' + this.section + '"]').toggleClass('main-nav__link--selected', true);
   },
+  getStoreItem: function(item) {
+    for (var i = 0; i < this.store.length; i++) {
+      if (this.store[i].id === item) {
+        return this.store[i];
+      }
+    }
+    return {};
+  },
   renderLibraryList: function() {
     $('#library__list').html(this.libraryListTemplate({library: this.library}));
   },
@@ -114,7 +122,7 @@ var App = {
     $('#store__list').html(this.storeListTemplate({store: this.store}));
   },
   renderStoreItem: function(item) {
-    $('#store-item__wrapper').html(this.storeItemTemplate({id: item, item: this.store[item], features: features}));
+    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features}));
     this.sections.hide();
     $('#store-item').show();
   },

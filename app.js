@@ -227,9 +227,7 @@ var loadExtComics = function() {
 var readComicFolder = function(fsPath) {
   return readComicJson(fsPath)
     .then(function(res) {
-      var entry = addEntry(res, fsPath);
-      projects[entry.id] = entry.o;
-      projectsList.push(entry.id);
+      return addEntry(res, fsPath);
     }, function(err) {
       console.error(err);
     });
@@ -252,6 +250,8 @@ var addEntry = function(comicData, fsPath) {
     name: id,
     data: comicData
   };
+  projects[id] = obj;
+  projectsList.push(id);
   app.get(serverPath + '/', persConnectInject);
   app.use(serverPath, express.static(fsPath));
   return { id: id, o: obj };
@@ -542,10 +542,8 @@ var pAddComicArchive = function(archive) {
   // add entry
     .then(function() {
       var entry = addEntry(comicJson, fsPath);
-      projects[entry.id] = entry.o;
-      projectsList.push(entry.id);
       // tell to load data in UI page
-      sendMessage('add-item', { id: entry.id });
+      sendMessage('add-item', { id: entry.id, data: entry.o });
       sendMessage('import', { message: 'completed' });
     },
   // handle errors

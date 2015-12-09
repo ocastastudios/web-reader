@@ -103,9 +103,10 @@ var App = {
       .filter('[href="#/' + this.section + '"]').toggleClass('main-nav__link--selected', true);
   },
   getStoreItem: function(item) {
-    for (var i = 0; i < this.store.length; i++) {
-      if (this.store[i].id === item) {
-        return this.store[i];
+    var lib = this.store.library;
+    for (var i = 0; i < lib.length; i++) {
+      if (lib[i].id === item) {
+        return lib[i];
       }
     }
     return {};

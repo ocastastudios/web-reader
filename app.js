@@ -155,7 +155,7 @@ var serverStart = function() {
       var internal = tools.isInternal(req);
       res.render('app', {
         library: projects,
-        store: store.data.library,
+        store: store.data,
         added: projects,
         internal: true
       });

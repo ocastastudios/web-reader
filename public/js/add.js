@@ -1,7 +1,6 @@
-/* global $, $document, sendMessage, receiveMessage */
+/* global $, sendMessage, receiveMessage */
 
-var isImporting = false;
-
+var $document = $(document);
 var $addRemoteForm = $('#add-remote-form');
 var $addRemoteUrl = $('#add-remote-url');
 var $addRemoteStop = $('#add-remote-stop');
@@ -16,6 +15,7 @@ var $addStoreProgressbarLabel;
 var $currentStatus;
 var totalDownload;
 var whichRemote = '';
+var isImporting = false;
 
 $addRemoteProgressbar.progressbar({
   value: false,

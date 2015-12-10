@@ -6,10 +6,7 @@ $.each(reader.helpers, function(key, value) {
 
 var App = {
   init: function() {
-    this.library = reader.library;
-    this.libraryList = reader.libraryList;
-    this.store = reader.store;
-    this.added = reader.added;
+    this.reader = reader;
     this.sections = $('.section');
     this.navs = $('.main-nav__link');
     this.libraryListTemplate = Handlebars.compile($('#library__list--template').html());
@@ -74,7 +71,7 @@ var App = {
     }
   },
   getStoreItem: function(item) {
-    var lib = this.store.library;
+    var lib = this.reader.store.library;
     for (var i = 0; i < lib.length; i++) {
       if (lib[i].id === item) {
         return lib[i];
@@ -83,23 +80,23 @@ var App = {
     return {};
   },
   renderLibraryList: function() {
-    $('#library__list').html(this.libraryListTemplate({library: this.library, libraryList: this.libraryList}));
+    $('#library__list').html(this.libraryListTemplate({library: this.reader.library, libraryList: this.reader.libraryList}));
   },
   renderLibraryItem: function(item) {
-    $('#library-item__wrapper').html(this.libraryItemTemplate({id: item, item: this.library[item], features: features}));
+    $('#library-item__wrapper').html(this.libraryItemTemplate({id: item, item: this.reader.library[item], features: features}));
     this.sections.hide();
     $('#library-item').show();
   },
   renderStoreList: function() {
-    $('#store__list').html(this.storeListTemplate({store: this.store}));
+    $('#store__list').html(this.storeListTemplate({store: this.reader.store}));
   },
   renderStoreItem: function(item) {
-    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features, libraryList: this.libraryList}));
+    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features, libraryList: this.reader.libraryList}));
     this.sections.hide();
     $('#store-item').show();
   },
   renderAdded: function() {
-    $('#added').html(this.addedTemplate({library: this.added}));
+    $('#added').html(this.addedTemplate({library: this.reader.added}));
   }
 };
 

@@ -48,6 +48,8 @@ var _ = require('underscore');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
+var Communication = require('./lib/communication');
+
 
 // settings
 // they may end up in the advanced setting panel
@@ -109,6 +111,8 @@ var promisesLoadComics = [];
 var downloadStream;
 var downloadStreamInterrupted = false;
 var store;
+
+var sendMessage = new Communication(iframeWin, serverUrl);
 
 
 /**
@@ -295,20 +299,6 @@ var downloadFile = function(url, dest, newName) {
 var readComicJson = function(fsPath) {
   var file = path.join(fsPath, 'comic.json');
   return tools.readJson(file);
-};
-
-
-/**
- * Send a message to the iframe
- * Communications between the app container (which runs under file://) and the pages in the local server (which runs under http://) can ben done only through window.postMessage (a method that enables cross-origin communication)
- * @param {string} type - Type of the message
- */
-var sendMessage = function(type, obj) {
-  var msg = {
-    type: type
-  };
-  _.extend(msg, obj);
-  iframeWin.postMessage(JSON.stringify(msg), serverUrl);
 };
 
 

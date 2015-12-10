@@ -113,11 +113,6 @@ var downloadStreamInterrupted = false;
 var store;
 
 var sendMessage = new Communication(iframeWin, serverUrl);
-var hbsHelpers = {};
-
-_.each(handlebars.helpers.common, function(value, key) {
-  hbsHelpers[key] = value.toString();
-});
 
 
 /**
@@ -146,7 +141,7 @@ var serverStart = function() {
         libraryList: projectsList,
         store: store.data,
         added: projects,
-        hbsHelpers: hbsHelpers,
+        hbsHelpers: handlebars.helpersFE,
         internal: true
       });
     });

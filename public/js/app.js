@@ -155,7 +155,7 @@ var App = {
     $('#store__list').html(this.storeListTemplate({store: this.store}));
   },
   renderStoreItem: function(item) {
-    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features}));
+    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features, libraryList: this.libraryList}));
     this.sections.hide();
     $('#store-item').show();
   },

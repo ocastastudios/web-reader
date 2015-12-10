@@ -328,6 +328,9 @@ label {
   padding-left: 10px;
   vertical-align: top;
 }
+.more__item__stop {
+  display: none;
+}
 
 /* Add */
 .add__form {
@@ -386,7 +389,7 @@ label {
 .add__submit {
   display: none;
 }
-.add__cancel {
+.add__stop {
   display: none;
 }
 .add__local__label {

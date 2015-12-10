@@ -1,21 +1,21 @@
-<form class="add__form" id="open-remote-form">
+<form class="add__form" id="add-remote-form">
   <div class="add__url__wrapper">
-    <input type="text" class="add__url" placeholder="Type URL here" id="open-remote-url" required value="" autocomplete="off">
-    <input id="open-remote-reset" type="reset" class="add__reset" value="Clear">
-    <label for="open-remote-reset" class="add__reset__label" title="Clear"></label>
-    <input id="open-remote-submit" type="submit" class="add__submit" value="Download">
-    <label for="open-remote-submit" class="add__submit__label" title="Download"></label>
+    <input id="add-remote-url" type="text" class="add__url" placeholder="Type URL here" required value="" autocomplete="off">
+    <input id="add-remote-reset" type="reset" class="add__reset" value="Clear">
+    <label for="add-remote-reset" class="add__reset__label" title="Clear"></label>
+    <input id="add-remote-submit" type="submit" class="add__submit" value="Download">
+    <label for="add-remote-submit" class="add__submit__label" title="Download"></label>
   </div>
-  <input type="button" class="add__cancel" id="open-remote-stop" value="Stop" title="Cancel Download">
-  <span class="status add__status"></span>
+  <input id="add-remote-stop" type="button" class="add__stop" value="Stop" title="Cancel Download">
+  <span id="add-remote-status" class="status add__status"></span>
 
-  <div class="progressbar add__url__progressbar" id="progressbar-url"><div class="progress-label">Downloading...</div></div>
+  <div class="progressbar add__url__progressbar" id="add-remote-progressbar"><div class="progress-label">Downloading...</div></div>
 </form>
 
 <span class="add__divider">or</span>
 
-<form class="add__form" id="open-archive-form">
-  <input id="open-local-archive" type="file" class="add__local" accept=".elcx">
-  <label for="open-local-archive" class="input add__local__label">Import local content</label>
-  <span class="status add__status"></span>
+<form class="add__form" id="add-archive-form">
+  <input id="add-archive-file" type="file" class="add__local" accept=".elcx">
+  <label for="add-archive-file" class="input add__local__label">Import local content</label>
+  <span id="add-archive-status" class="status add__status"></span>
 </form>

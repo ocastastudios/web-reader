@@ -1,14 +1,81 @@
 /* global $, $document, sendMessage, receiveMessage */
 
-var $currentOpen;
+var isImporting = false;
 
-// Remote URL from add
-var $openRemoteForm = $('#open-remote-form');
-var $openRemoteUrl = $('#open-remote-url');
-var $openRemoteStop = $('#open-remote-stop');
-var $progressbarUrl = $('#progressbar-url');
-var $progressLabelUrl = $progressbarUrl.find('.progress-label');
+var $addRemoteForm = $('#add-remote-form');
+var $addRemoteUrl = $('#add-remote-url');
+var $addRemoteStop = $('#add-remote-stop');
+var $addRemoteStatus = $('#add-remote-status');
+var $addRemoteProgressbar = $('#add-remote-progressbar');
+var $addRemoteProgressbarLabel = $addRemoteProgressbar.find('.progress-label');
+var $addArchiveForm = $('#add-archive-form');
+var $addArchiveStatus = $('#add-archive-status');
+var $addStoreStop;
+var $addStoreProgressbar;
+var $addStoreProgressbarLabel;
+var $currentStatus;
 var totalDownload;
+var whichRemote = '';
+
+$addRemoteProgressbar.progressbar({
+  value: false,
+  change: function() {
+    if ($addRemoteProgressbar.progressbar('value') === false) {
+      $addRemoteProgressbarLabel.text('Downloading...');
+    }
+    else {
+      $addRemoteProgressbarLabel.text('Downloaded ' + $addRemoteProgressbar.progressbar('value') + '% of ' + totalDownload);
+    }
+  },
+  complete: function() {
+    $addRemoteProgressbarLabel.text('Complete!');
+  }
+});
+
+var setStatus = function(status) {
+  $currentStatus.text(status);
+};
+
+/**
+ * @param {boolean} disabled - True to disable
+ */
+var toggleForms = function(disable) {
+  $addRemoteForm.find('input').prop('disabled', disable);
+  $addArchiveForm.find('input').prop('disabled', disable);
+  // not saving this element in a variable as it's generate by the templating system
+  $('#add-store-button').prop('disabled', disable);
+};
+
+var enableForms = function() {
+  toggleForms(false);
+};
+
+var disableForms = function() {
+  toggleForms(true);
+};
+
+var importStart = function() {
+  isImporting = true;
+  setStatus('Waiting...');
+  disableForms();
+};
+
+var importStarted = function() {
+  setStatus('Importing...');
+};
+
+var importCompleted = function() {
+  isImporting = false;
+  setStatus('Import completed!');
+  enableForms();
+};
+
+var importError = function() {
+  isImporting = false;
+  setStatus('Import interrupted with error');
+  enableForms();
+};
+
 
 var remoteStart = function(url) {
   if (url !== '') {
@@ -16,93 +83,103 @@ var remoteStart = function(url) {
   }
 };
 
-var remoteStop = function() {
-  $progressLabelUrl.text('Error!');
-  $openRemoteStop.hide();
-  $progressbarUrl.hide();
+var remoteStarted = function(val) {
+  totalDownload = val;
+  if (whichRemote === 'add') {
+    $addRemoteStop.show().prop('disabled', false);
+    $addRemoteProgressbar.progressbar('value', false);
+    $addRemoteProgressbar.show();
+  }
+  if (whichRemote === 'store') {
+    $addStoreProgressbar = $('#add-store-progressbar');
+    $addStoreProgressbarLabel = $addStoreProgressbar.find('.progress-label');
+    $addStoreStop = $('#add-store-stop');
+    $addStoreProgressbar.progressbar({
+      value: false,
+      change: function() {
+        if ($addStoreProgressbar.progressbar('value') === false) {
+          $addStoreProgressbarLabel.text('Downloading...');
+        }
+        else {
+          $addStoreProgressbarLabel.text('Downloaded ' + $addStoreProgressbar.progressbar('value') + '% of ' + totalDownload);
+        }
+      },
+      complete: function() {
+        $addStoreProgressbarLabel.text('Complete!');
+        remoteCompleted();
+      }
+    });
+    $addStoreStop.show().prop('disabled', false);
+    $addStoreProgressbar.show();
+  }
 };
 
 var remoteUpdated = function(val) {
-  $progressbarUrl.progressbar('value', val);
-};
-
-var remoteStarted = function(val) {
-  totalDownload = val;
-  $openRemoteStop.show();
-  $progressbarUrl.progressbar('value', false);
-  $progressbarUrl.show();
-};
-
-$openRemoteForm.on('submit', function(e) {
-  console.log('submit');
-  e.preventDefault();
-  $currentOpen = $openRemoteForm;
-  var url = $openRemoteUrl.val();
-  remoteStart(url);
-});
-$openRemoteStop.on('click', function() {
-  sendMessage('interrupt');
-});
-$progressbarUrl.progressbar({
-  value: false,
-  change: function() {
-    if ($progressbarUrl.progressbar('value') === false) {
-      $progressLabelUrl.text('Downloading...');
-    }
-    else {
-      $progressLabelUrl.text('Downloaded ' + $progressbarUrl.progressbar('value') + '% of ' + totalDownload);
-    }
-  },
-  complete: function() {
-    $progressLabelUrl.text('Complete!');
+  if (whichRemote === 'add') {
+    $addRemoteProgressbar.progressbar('value', val);
   }
+  if (whichRemote === 'store') {
+    $addStoreProgressbar.progressbar('value', val);
+  }
+};
+
+var remoteError = function() {
+  if (whichRemote === 'add') {
+    $addRemoteProgressbarLabel.text('Error!');
+    $addRemoteStop.hide();
+    $addRemoteProgressbar.hide();
+  }
+  if (whichRemote === 'store') {
+    $addStoreProgressbarLabel.text('Error!');
+    $addStoreStop.hide();
+    $addStoreProgressbar.hide();
+  }
+};
+
+var remoteCompleted = function() {
+  if (whichRemote === 'add') {
+    $addRemoteStop.hide();
+  }
+  if (whichRemote === 'store') {
+    $addStoreStop.hide();
+  }
+};
+
+
+// Remote URL from add
+$addRemoteForm.on('submit', function(e) {
+  e.preventDefault();
+  $currentStatus = $addRemoteStatus;
+  var url = $addRemoteUrl.val();
+  whichRemote = 'add';
+  remoteStart(url);
+  importStart();
 });
 
 
 // Remote URL from store
-$document.on('click', '.js-store-item-download', function() {
+$document.on('click', '#add-store-button', function() {
+  $currentStatus = $('#add-store-status');
   var $this = $(this);
   var url = $this.data('url');
+  whichRemote = 'store';
   remoteStart(url);
+  importStart();
 });
 
 
 // Local archive
-var $openArchiveForm = $('#open-archive-form');
-$('#open-local-archive').on('change', function() {
+$('#add-archive-file').on('change', function() {
   var path = this.files[0].path;
   if (path !== '') {
-    $currentOpen = $openArchiveForm;
+    $currentStatus = $addArchiveStatus;
     sendMessage('local-archive', { path: path });
+    importStart();
     // reset its value so it can catch the next event in case we select the same previous value
     this.value = '';
   }
 });
 
-
-// General
-var importStarted = function() {
-  $openArchiveForm.find('.status').text('');
-  $openRemoteForm.find('.status').text('');
-  $currentOpen.find('.status').text('Importing');
-  // disable all forms
-  $openArchiveForm.find('input').prop('disabled', true);
-  $openRemoteForm.find('input:not(#open-remote-stop)').prop('disabled', true);
-};
-
-var importError = function() {
-  $currentOpen.find('.status').text('Import terminated with error');
-  // enable all forms
-  $openArchiveForm.find('input').prop('disabled', false);
-  $openRemoteForm.find('input').prop('disabled', false);
-};
-
-var importCompleted = function() {
-  $currentOpen.find('.status').text('Import completed!');
-  // enable all forms
-  $openArchiveForm.find('input').prop('disabled', false);
-  $openRemoteForm.find('input').prop('disabled', false);
-};
 
 // overrind the receive function so every file it's more modular, and its
 // inclusion or exclusion won't compromise the rest of the script
@@ -112,7 +189,7 @@ receiveMessage = function(msg) {
 
   if (msg.type === 'progress-url') {
     if (msg.message === -1) {
-      remoteStop();
+      remoteError();
     }
     else {
       remoteUpdated(msg.message);

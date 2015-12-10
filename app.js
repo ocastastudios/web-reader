@@ -517,8 +517,8 @@ var pAddComicArchive = function(archive) {
     .then(function() {
       var entry = addEntry(comicJson, fsPath);
       // tell to load data in UI page
-      sendMessage('add-item', { id: entry.id, data: entry.o });
       sendMessage('import', { message: 'completed' });
+      sendMessage('add-item', { id: entry.id, data: entry.o });
     },
   // handle errors
     function(err) {

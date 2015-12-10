@@ -212,4 +212,8 @@ receiveMessage = function(msg) {
       importError();
     }
   }
+
+  if (msg.type === 'add-item') {
+    console.log(msg.id, msg.data);
+  }
 };

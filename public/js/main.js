@@ -1,4 +1,4 @@
-/*global $ */
+/* global $ */
 
 var sendMessage = function(type, obj) {
   var msg = {

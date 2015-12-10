@@ -1,26 +1,15 @@
-/*global $, Handlebars, Router, helpers */
+/* global $, Handlebars, Router, reader, features */
 
-$.each(helpers, function(key, value) {
+$.each(reader.helpers, function(key, value) {
   Handlebars.registerHelper(key, new Function('return ' + value)());
 });
 
-var util = {
-  store: function(namespace, data) {
-    if (arguments.length > 1) {
-      window[namespace] = data;
-    } else {
-      var store = window[namespace];
-      return store || {};
-    }
-  }
-};
-
 var App = {
   init: function() {
-    this.library = util.store('library');
-    this.libraryList = util.store('libraryList');
-    this.store = util.store('store');
-    this.added = util.store('added');
+    this.library = reader.library;
+    this.libraryList = reader.libraryList;
+    this.store = reader.store;
+    this.added = reader.added;
     this.sections = $('.section');
     this.navs = $('.main-nav__link');
     this.libraryListTemplate = Handlebars.compile($('#library__list--template').html());

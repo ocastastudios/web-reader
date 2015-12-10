@@ -1,4 +1,4 @@
-/*global $, Handlebars, Router */
+/*global $, Handlebars, Router, helpers */
 
 var $document = $(document);
 
@@ -36,22 +36,8 @@ var dialogError = function(msg) {
 
 
 
-Handlebars.registerHelper('eq', function(a, b, options) {
-  return a === b ? options.fn(this) : options.inverse(this);
-});
-
-Handlebars.registerHelper('breaklines', function(text) {
-  text = Handlebars.Utils.escapeExpression(text);
-  text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
-  return new Handlebars.SafeString(text);
-});
-
-Handlebars.registerHelper('isValueInArray', function(array, value) {
-  var index = array.indexOf(value);
-  if (index === -1) {
-    return false;
-  }
-  return true;
+$.each(helpers, function(key, value) {
+  Handlebars.registerHelper(key, new Function('return ' + value)());
 });
 
 var util = {

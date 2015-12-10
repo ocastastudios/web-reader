@@ -46,6 +46,14 @@ Handlebars.registerHelper('breaklines', function(text) {
   return new Handlebars.SafeString(text);
 });
 
+Handlebars.registerHelper('isValueInArray', function(array, value) {
+  var index = array.indexOf(value);
+  if (index === -1) {
+    return false;
+  }
+  return true;
+});
+
 var util = {
   store: function(namespace, data) {
     if (arguments.length > 1) {

@@ -20,6 +20,9 @@
     {{/if}}
     <div class="list__item__buttons">
       <a href="#/store-item/{{../id}}" class="button">More info</a>
+      {{#if (isValueInArray ../../libraryList ../id)}}
+      got it
+      {{/if}}
     </div>
   </div>
 </li>

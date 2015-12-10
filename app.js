@@ -39,15 +39,15 @@ var app = express();
 var http = require('http');
 var path = require('path');
 var fs = require('fs-extra');
-var exphbs = require('express-handlebars');
 var Download = require('download');
 var connectInject = require('connect-inject');
 var osenv = require('osenv');
 var Q = require('q');
 var junk = require('junk');
-var S = require('string');
+var _ = require('underscore');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
+var handlebars = require('./lib/handlebars');
 
 // settings
 // they may end up in the advanced setting panel
@@ -110,28 +110,6 @@ var downloadStream;
 var downloadStreamInterrupted = false;
 var store;
 
-var hbs = exphbs.create({
-  extname: '.hbs',
-  helpers: {
-    breaklines: function(text) {
-      text = hbs.handlebars.Utils.escapeExpression(text);
-      text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
-      return new hbs.handlebars.SafeString(text);
-    },
-    rawpartial: function(partialName) {
-      var file = path.join(process.cwd(), hbs.partialsDir, partialName + hbs.extname);
-      var template = fs.readFileSync(file, 'utf8');
-      return template;
-    },
-    eq: function(a, b, options) {
-      return a === b ? options.fn(this) : options.inverse(this);
-    },
-    json: function(context) {
-      return JSON.stringify(context);
-    }
-  }
-});
-
 
 /**
  * Start the local server
@@ -146,8 +124,8 @@ var serverStart = function() {
 
     // handlebars
     app.set('views', path.join(process.cwd(), 'views'));
-    app.engine('.hbs', hbs.engine);
-    app.set('view engine', '.hbs');
+    app.engine(handlebars.ext, handlebars.hbs.engine);
+    app.set('view engine', handlebars.ext);
 
     // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
@@ -159,6 +137,7 @@ var serverStart = function() {
         libraryList: projectsList,
         store: store.data,
         added: projects,
+        helpers: handlebars.helpers.common,
         internal: true
       });
     });
@@ -328,7 +307,7 @@ var sendMessage = function(type, obj) {
   var msg = {
     type: type
   };
-  $.extend(msg, obj);
+  _.extend(msg, obj);
   iframeWin.postMessage(JSON.stringify(msg), serverUrl);
 };
 
@@ -535,7 +514,7 @@ var pAddComicArchive = function(archive) {
   // create slug and move folder in library
     .then(function(res) {
       comicJson = res;
-      slug = S(comicJson.title).slugify().s + '_' + checksum;
+      slug = '' + checksum;
       fsPath = path.join(LIB_DIR, slug);
       return tools.moveFolder(tmpPath, fsPath);
     })

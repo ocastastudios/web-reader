@@ -203,7 +203,7 @@ var addItem = function(msg) {
   }
 
   if (whichImport === 'archive' || whichImport === 'url') {
-    App.renderLibraryItem(id, 'add');
+    App.router.setRoute('/add-item/' + id);
     // reader.added.unshift(id);
   }
 };
@@ -212,7 +212,8 @@ var giulia = function() {
   var msg = {
     id: 'afed27c144a0055de97bfc9a84d5464f5abb15b2'
   };
-  App.renderLibraryItem(msg.id, 'add');
+  App.router.setRoute('/add-item/' + msg.id);
+  // App.renderLibraryItem(msg.id, 'add');
 };
 
 

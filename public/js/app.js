@@ -17,14 +17,12 @@ var App = {
     // this.render();
     // this.bindEvents();
 
-    new Router({
+    this.router = new Router({
       '/:section': function (section) {
         this.section = section;
         this.showSection();
-      }.bind(this)
-    }).init('/store');
-    
-    new Router({
+      }.bind(this),
+
       '/:section/:item': function (section, item) {
         if (section === 'store-item') {
           if (this.reader.libraryList.indexOf(item) === -1) {
@@ -50,8 +48,13 @@ var App = {
           this.section = section;
           this.showSection(item);
         }
+
+        if (section === 'add-item') {
+          this.renderLibraryItem(item, 'add');
+          this.toggleNav('add');
+        }
       }.bind(this)
-    }).init();
+    }).init('/store');
   },
   bindEvents: function() {
     

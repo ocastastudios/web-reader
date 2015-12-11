@@ -242,22 +242,18 @@ label {
 
 /* More info */
 .more__item {
-  display: table;
-  width: 100%;
+  display: flex;
 }
 .more__item__img {
-  display: table-cell;
-  vertical-align: top;
-  width: 33.33%;
+  flex: 1 1 200px;
 }
 .more__item img {
   display: block;
   width: 100%;
 }
 .more__item__content {
-  display: table-cell;
+  flex: 2 1 300px;
   padding-left: 30px;
-  vertical-align: top;
 }
 .more__item__data {
   padding: 0.25em 0;
@@ -272,9 +268,10 @@ label {
 .more__item__buttons .button {
   margin: 0 0 15px;
 }
-.more__item__buttons--library .button {
-  margin-left: auto;
-  margin-right: auto;
+.more__item__buttons--library {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
 }
 /* Creators */
 .more__item__creators {

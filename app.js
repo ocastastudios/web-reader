@@ -226,11 +226,17 @@ var readComicFolder = function(fsPath) {
 var addEntry = function(comicData, fsPath) {
   var id = path.basename(fsPath);
   var serverPath = '/' + id;
+  var cover = false;
+
+  if (tools.exists(path.join(fsPath, 'cover.png'))) {
+    cover = true;
+  }
   
   var obj = {
     fsPath: fsPath,
     serverPath: serverPath,
     name: id,
+    cover: cover,
     data: comicData
   };
   projects[id] = obj;

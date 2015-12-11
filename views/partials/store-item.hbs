@@ -1,7 +1,7 @@
 {{#with item}}
 {{#with data}}
 
-<div class="more__item" id="store-{{../id}}">
+<div class="more__item">
   <div class="more__item__img">
     {{#if ../cover}}
     <img src="/store/{{../../cover}}">
@@ -10,33 +10,33 @@
     {{/if}}
   </div>
   <div class="more__item__content">
-    <h2>{{title}}</h2>
+    {{#if title}}<h2>{{../title}}</h2>{{/if}}
     
-    <div class="more__item__data">{{../url}}</div>
+    {{#if ../url}}<div class="more__item__data">{{../../url}}</div>{{/if}}
+    
     <div class="more__item__data">version: {{version}}</div>
-    <div class="more__item__data">published: {{publish_date}}</div>
     
-    <p class="more__item__summary">{{breaklines summary}}</p>
+    {{#if publish_date}}<div class="more__item__data">published: {{../publish_date}}</div>{{/if}}
+    
+    {{#if summary}}<p class="more__item__summary">{{breaklines ../summary}}</p>{{/if}}
+    
     {{#if creators}}
     <ul class="more__item__creators">
       {{#each creators}}
       <li class="more__item__creator">
-        <span class="role more__item__role">{{role}}:</span>
-        <span class="author more__item__author">{{name}}</span>
+        {{#if role}}<span class="role more__item__role">{{../role}}:</span>{{/if}}
+        {{#if name}}<span class="author more__item__author">{{../name}}</span>{{/if}}
       </li>
       {{/each}}
     </ul>
     {{/if}}
 
     <div class="more__item__buttons">
-      {{#if (isValueInArray ../../libraryList ../id)}}
-      got it
-      {{else}}
-      <input id="add-store-button" type="button" class="button" data-url="{{../../url}}" value="Download">
+      <input id="add-store-button" type="button" class="button" data-url="{{../url}}" value="Download">
       <input id="add-store-stop" type="button" class="button more__item__stop" value="Stop" title="Cancel Download">
       <span id="add-store-status" class="status add__status"></span>
       <div class="progressbar" id="add-store-progressbar"><div class="progress-label">Downloading...</div></div>
-      {{/if}}
+      
       <a href="#/store/{{../id}}" class="button">Back to store</a>
     </div>
   </div>

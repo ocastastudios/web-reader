@@ -27,7 +27,12 @@ var App = {
     new Router({
       '/:section/:item': function (section, item) {
         if (section === 'store-item') {
-          this.renderStoreItem(item);
+          if (this.reader.libraryList.indexOf(item) === -1) {
+            this.renderStoreItem(item);
+          }
+          else {
+            this.renderLibraryItem(item, 'store');
+          }
           this.toggleNav('store');
         }
         if (section === 'store') {
@@ -35,7 +40,7 @@ var App = {
           this.showSection(item);
         }
         if (section === 'library-item') {
-          this.renderLibraryItem(item);
+          this.renderLibraryItem(item, 'library');
           this.toggleNav('library');
         }
         if (section === 'library') {
@@ -80,23 +85,37 @@ var App = {
     return {};
   },
   renderLibraryList: function() {
-    $('#library__list').html(this.libraryListTemplate({library: this.reader.library, libraryList: this.reader.libraryList}));
+    $('#library__list').html(this.libraryListTemplate({
+      library: this.reader.library,
+      libraryList: this.reader.libraryList
+    }));
   },
-  renderLibraryItem: function(item) {
-    $('#library-item__wrapper').html(this.libraryItemTemplate({id: item, item: this.reader.library[item], features: features}));
+  renderLibraryItem: function(item, section) {
+    $('#library-item__wrapper').html(this.libraryItemTemplate({
+      id: item,
+      item: this.reader.library[item],
+      section: section,
+      features: features
+    }));
     this.sections.hide();
     $('#library-item').show();
   },
   renderStoreList: function() {
-    $('#store__list').html(this.storeListTemplate({store: this.reader.store}));
+    $('#store__list').html(this.storeListTemplate({
+      store: this.reader.store
+    }));
   },
   renderStoreItem: function(item) {
-    $('#store-item__wrapper').html(this.storeItemTemplate({item: this.getStoreItem(item), features: features, libraryList: this.reader.libraryList}));
+    $('#store-item__wrapper').html(this.storeItemTemplate({
+      item: this.getStoreItem(item)
+    }));
     this.sections.hide();
     $('#store-item').show();
   },
   renderAdded: function() {
-    $('#added').html(this.addedTemplate({library: this.reader.added}));
+    $('#added').html(this.addedTemplate({
+      library: this.reader.added
+    }));
   }
 };
 

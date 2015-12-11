@@ -1,36 +1,37 @@
 {{#with item}}
 {{#with data}}
 
-<div class="more__item" id="library-{{../../id}}">
+<div class="more__item">
   <div class="more__item__img">
-    <img src="/{{../../id}}/cover.png">
-
-    <div class="more__item__buttons more__item__buttons--library">
-      <a href="#" class="button">Start reading</a>
-      <a href="#/library/{{../../id}}" class="button">Back to library</a>
-      <input type="button" class="button" value="View files">
-      <button class="button">Delete content</button>
-    </div>
+    {{#if ../cover}}
+    <img src="/{{../../../id}}/cover.png">
+    {{else}}
+    <img src="/images/cover.png">
+    {{/if}}
   </div>
   <div class="more__item__content">
-    <h2>{{title}}</h2>
+    {{#if title}}<h2>{{../title}}</h2>{{/if}}
     
-    <div class="more__item__data">http://j.mp/elcx-hammer</div>
+    {{#if ../url}}<div class="more__item__data">{{../../url}}</div>{{/if}}
+    
     <div class="more__item__data">version: {{version}}</div>
-    <div class="more__item__data">published: {{publish_date}}</div>
     
-    <p class="more__item__summary">{{breaklines summary}}</p>
+    {{#if publish_date}}<div class="more__item__data">published: {{../publish_date}}</div>{{/if}}
+    
+    {{#if summary}}<p class="more__item__summary">{{breaklines ../summary}}</p>{{/if}}
+
     {{#if creators}}
     <ul class="more__item__creators">
       {{#each creators}}
       <li class="more__item__creator">
-        <span class="role more__item__role">{{role}}:</span>
-        <span class="author more__item__author">{{name}}</span>
+        {{#if role}}<span class="role more__item__role">{{../role}}:</span>{{/if}}
+        {{#if name}}<span class="author more__item__author">{{../name}}</span>{{/if}}
       </li>
       {{/each}}
     </ul>
     {{/if}}
 
+    {{#if config.features}}
     <ul class="more__item__features">
     {{#each config.features}}
       <li class="more__item__feature">
@@ -38,11 +39,23 @@
         <div class="more__item__feature__img">
           <img src="images/{{this}}.svg">
         </div>
-        <p class="more__item__feature__desc">{{lookup ../../../features this}}</p>
+        <p class="more__item__feature__desc">{{lookup ../../../../features this}}</p>
       </li>
     {{/each}}
     </ul>
+    {{/if}}
   </div>
+</div>
+<div class="more__item__buttons more__item__buttons--library">
+  <a href="#" class="button">Start reading</a>
+  {{#eq ../../section 'store'}}
+  <a href="#/store/{{../../../id}}" class="button">Back to store</a>
+  {{/eq}}
+  {{#eq ../../section 'library'}}
+  <a href="#/library/{{../../../id}}" class="button">Back to library</a>
+  {{/eq}}
+  <input type="button" class="button" value="View files">
+  <button class="button">Delete content</button>
 </div>
 
 {{/with}}

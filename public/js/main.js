@@ -1,5 +1,7 @@
 /* global $ */
 
+var $document = $(document);
+
 var sendMessage = function(type, obj) {
   var msg = {
     type: type
@@ -31,6 +33,11 @@ var dialogError = function(msg) {
   confirm.html('<p>' + msg + '</p>');
   confirm.dialog('open');
 };
+
+$document.on('click', '.js-open-folder', function() {
+  var id = $(this).data('id');
+  sendMessage('open-folder', { id: id });
+});
 
 window.addEventListener('message', function(e) {
   if (e.origin !== 'file://') {

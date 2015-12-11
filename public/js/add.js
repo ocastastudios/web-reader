@@ -1,6 +1,5 @@
-/* global $, sendMessage, receiveMessage */
+/* global $, $document, sendMessage, receiveMessage */
 
-var $document = $(document);
 var $addRemoteForm = $('#add-remote-form');
 var $addRemoteUrl = $('#add-remote-url');
 var $addRemoteStop = $('#add-remote-stop');

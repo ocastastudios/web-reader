@@ -228,10 +228,15 @@ label {
 }
 .list__item__authors {
   display: inline;
-  padding-left: 5px;
 }
 .list__item__author {
   display: inline;
+}
+.list__item__author:first-child:before {
+  content: 'by ';
+  display: inline;
+  padding-right: 5px;
+  text-transform: lowercase;
 }
 .list__item__author:not(:last-child):after {
   content: ',';

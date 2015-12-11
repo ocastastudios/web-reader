@@ -9,15 +9,16 @@
     {{/if}}
   </div>
   <div class="list__item__content">
-    <h2 class="list__item__title">{{title}}</h2>
+    {{#if title}}<h2 class="list__item__title">{{../title}}</h2>{{/if}}
+    
     {{#if creators}}
-    by
     <ul class="list__item__authors">
       {{#each creators}}
-      <li class="list__item__author author">{{name}}</li>
+      {{#if name}}<li class="list__item__author author">{{../name}}</li>{{/if}}
       {{/each}}
     </ul>
     {{/if}}
+    
     <div class="list__item__buttons">
       <a href="#/store-item/{{../id}}" class="button">More info</a>
       {{#if (isValueInArray ../../libraryList ../id)}}

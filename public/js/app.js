@@ -54,7 +54,7 @@ var App = {
           this.toggleNav('add');
         }
       }.bind(this)
-    }).init('/store');
+    }).init(internal ? '/store' : '/library');
   },
   bindEvents: function() {
     

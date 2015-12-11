@@ -204,7 +204,8 @@ var addItem = function(msg) {
 
   if (whichImport === 'archive' || whichImport === 'url') {
     App.router.setRoute('/add-item/' + id);
-    // reader.added.unshift(id);
+    // todo clean forms and progressbar and status
+    // reader.added.unshift(id); // todo - disabled at the moment
   }
 };
 

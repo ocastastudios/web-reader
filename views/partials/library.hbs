@@ -3,7 +3,11 @@
 {{#with data}}
 <li class="list__item id--{{../../this}}">
   <div class="list__item__img">
-    <img src="/{{../../this}}/cover.png">
+    {{#if ../cover}}
+    <img src="/{{../../../this}}/cover.png">
+    {{else}}
+    <img src="/images/cover.png">
+    {{/if}}
   </div>
   <div class="list__item__content">
     <h2 class="list__item__title">{{title}}</h2>

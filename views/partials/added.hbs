@@ -5,7 +5,11 @@
   {{#with data}}
   <li class="list__item" id="list__item--{{@key}}">
     <div class="list__item__img">
+      {{#if ../cover}}
       <img src="/{{@key}}/cover.png">
+      {{else}}
+      <img src="/images/cover.png">
+      {{/if}}
     </div>
     <div class="list__item__content">
       <h2 class="list__item__title">{{title}}</h2>
@@ -18,7 +22,7 @@
       </ul>
       {{/if}}
       <div class="list__item__buttons">
-        <a href="#/library/{{@key}}" class="button">More info</a>
+        <a href="#/library-item/{{@key}}" class="button">More info</a>
       </div>
     </div>
   </li>

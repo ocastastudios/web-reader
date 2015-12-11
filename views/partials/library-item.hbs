@@ -54,6 +54,9 @@
   {{#eq ../../section 'library'}}
   <a href="#/library/{{../../../id}}" class="button">Back to library</a>
   {{/eq}}
+  {{#eq ../../section 'add'}}
+  <a href="#/add" class="button">Back to manage</a>
+  {{/eq}}
   <input type="button" class="button js-open-folder" data-id="{{../../id}}" value="View files">
   <button class="button">Delete content</button>
 </div>

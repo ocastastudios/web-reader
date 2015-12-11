@@ -1,4 +1,4 @@
-/* global $, $document, sendMessage, receiveMessage */
+/* global $, $document, sendMessage, receiveMessage, reader, App */
 
 var $addRemoteForm = $('#add-remote-form');
 var $addRemoteUrl = $('#add-remote-url');
@@ -14,6 +14,7 @@ var $addStoreProgressbarLabel;
 var $currentStatus;
 var totalDownload;
 var whichRemote = '';
+var whichImport = '';
 var isImporting = false;
 
 $addRemoteProgressbar.progressbar({
@@ -148,22 +149,28 @@ var remoteCompleted = function() {
 // Remote URL from add
 $addRemoteForm.on('submit', function(e) {
   e.preventDefault();
-  $currentStatus = $addRemoteStatus;
   var url = $addRemoteUrl.val();
-  whichRemote = 'add';
-  remoteStart(url);
-  importStart();
+  if (url !== '') {
+    $currentStatus = $addRemoteStatus;
+    whichRemote = 'add';
+    whichImport = 'url';
+    remoteStart(url);
+    importStart();
+  }
 });
 
 
 // Remote URL from store
 $document.on('click', '#add-store-button', function() {
-  $currentStatus = $('#add-store-status');
   var $this = $(this);
   var url = $this.data('url');
-  whichRemote = 'store';
-  remoteStart(url);
-  importStart();
+  if (url !== '') {
+    $currentStatus = $('#add-store-status');
+    whichRemote = 'store';
+    whichImport = 'store';
+    remoteStart(url);
+    importStart();
+  }
 });
 
 
@@ -171,6 +178,7 @@ $document.on('click', '#add-store-button', function() {
 $('#add-archive-file').on('change', function() {
   var path = this.files[0].path;
   if (path !== '') {
+    whichImport = 'archive';
     $currentStatus = $addArchiveStatus;
     sendMessage('local-archive', { path: path });
     importStart();
@@ -178,6 +186,34 @@ $('#add-archive-file').on('change', function() {
     this.value = '';
   }
 });
+
+
+var addItem = function(msg) {
+  var id = msg.id;
+  reader.library[id] = msg.data;
+  reader.libraryList.push(id);
+
+  if (reader.store.libraryList.indexOf(id) !== -1) {
+    App.renderStoreList();
+  }
+  App.renderLibraryList();
+
+  if (whichImport === 'store') {
+    App.renderLibraryItem(id, 'store');
+  }
+
+  if (whichImport === 'archive' || whichImport === 'url') {
+    App.renderLibraryItem(id, 'add');
+    reader.added.unshift(id);
+  }
+};
+
+var giulia = function() {
+  var msg = {
+    id: 'afed27c144a0055de97bfc9a84d5464f5abb15b2'
+  };
+  App.renderLibraryItem(msg.id, 'add');
+};
 
 
 // overrind the receive function so every file it's more modular, and its
@@ -213,6 +249,6 @@ receiveMessage = function(msg) {
   }
 
   if (msg.type === 'add-item') {
-    console.log(msg.id, msg.data);
+    addItem(msg);
   }
 };

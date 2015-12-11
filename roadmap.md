@@ -11,12 +11,12 @@
 * [x] add this functionalities to external comics:
   * [x] view folder in finder/explorer - only if page is viewed from inside the app
   * [x] remove entry and delete files - only if page is viewed from inside the app
-* [ ] add "about Electricomics" section
+* [x] add "about Electricomics" section
 * [x] add progress bar to download
 * [x] add loading screen when adding comic
 * [x] add splash screen
 * [ ] fix tilt for Sway
-* [ ] something that shows or interfaces with http://electricomics.net/library/
+* [x] something that shows or interfaces with http://electricomics.net/library/
 * [x] the download functionality needs:
   * [x] progress bar
   * [x] total final file size at the beginning

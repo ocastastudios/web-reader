@@ -35,14 +35,17 @@ var App = {
           }
           this.toggleNav('store');
         }
+        
         if (section === 'store') {
           this.section = section;
           this.showSection(item);
         }
+        
         if (section === 'library-item') {
           this.renderLibraryItem(item, 'library');
           this.toggleNav('library');
         }
+        
         if (section === 'library') {
           this.section = section;
           this.showSection(item);
@@ -102,7 +105,8 @@ var App = {
   },
   renderStoreList: function() {
     $('#store__list').html(this.storeListTemplate({
-      store: this.reader.store
+      store: this.reader.store,
+      libraryList: this.reader.libraryList
     }));
   },
   renderStoreItem: function(item) {
@@ -114,7 +118,8 @@ var App = {
   },
   renderAdded: function() {
     $('#added').html(this.addedTemplate({
-      library: this.reader.added
+      library: this.reader.library,
+      added: this.reader.added
     }));
   }
 };

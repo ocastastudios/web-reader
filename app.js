@@ -140,7 +140,7 @@ var serverStart = function() {
         library: projects,
         libraryList: projectsList,
         store: store.data,
-        added: projects,
+        added: [],
         hbsHelpers: handlebars.helpersFE,
         internal: true
       });

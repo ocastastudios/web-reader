@@ -204,7 +204,7 @@ var addItem = function(msg) {
 
   if (whichImport === 'archive' || whichImport === 'url') {
     App.renderLibraryItem(id, 'add');
-    reader.added.unshift(id);
+    // reader.added.unshift(id);
   }
 };
 

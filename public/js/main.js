@@ -56,6 +56,4 @@ window.addEventListener('message', function(e) {
 });
 
 
-var emitter = new EventEmitter2();
-
 sendMessage('online');

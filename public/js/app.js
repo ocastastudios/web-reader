@@ -1,4 +1,4 @@
-/* global $, Handlebars, Router, reader, features */
+/* global $, Handlebars, Router, reader, features, internal */
 
 $.each(reader.helpers, function(key, value) {
   Handlebars.registerHelper(key, new Function('return ' + value)());
@@ -98,7 +98,8 @@ var App = {
       id: item,
       item: this.reader.library[item],
       section: section,
-      features: features
+      features: features,
+      internal: internal
     }));
     this.sections.hide();
     $('#library-item').show();

@@ -1,37 +1,3 @@
-/* global $ */
-/*!
- * Electricomics
- * https://github.com/electricomics
- *
-/*    
-@licstart  The following is the entire license notice for the 
-JavaScript below.
-
-Copyright (C) 2015  Electricomics CIC
-
-The JavaScript code in this page is free software: you can
-redistribute it and/or modify it under the terms of the GNU
-General Public License (GNU GPL) as published by the Free Software
-Foundation, either version 3 of the License, or (at your option)
-any later version.  The code is distributed WITHOUT ANY WARRANTY;
-without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
-
-As additional permission under GNU GPL version 3 section 7, you
-may distribute non-source (e.g., minimized or compacted) forms of
-that code without the copy of the GNU GPL normally required by
-section 4, provided you include this license notice and a URL
-through which recipients can access the Corresponding Source.   
-
-
-@licend  The above is the entire license notice
-for the JavaScript code in this page.
-*/
-
-// for debugging purposes
-var DEBUG = true;
-
-// npm modules
 var nwgui = require('nw.gui');
 var win = nwgui.Window.get();
 var express = require('express');
@@ -45,11 +11,13 @@ var osenv = require('osenv');
 var Q = require('q');
 var junk = require('junk');
 var _ = require('underscore');
+var $ = require('jquery');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
 var Communication = require('./lib/communication');
 
+var DEBUG = true;
 
 // settings
 // they may end up in the advanced setting panel
@@ -133,6 +101,10 @@ var serverStart = function() {
 
     // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
+    app.use('/vendor/jquery', express.static(path.join(process.cwd(), 'node_modules', 'jquery', 'dist')));
+    app.use('/vendor/director', express.static(path.join(process.cwd(), 'node_modules', 'director', 'build')));
+    app.use('/vendor/handlebars', express.static(path.join(process.cwd(), 'node_modules', 'express-handlebars', 'node_modules', 'handlebars', 'dist')));
+    
     // app
     app.use('/index', function(req, res) {
       var internal = tools.isInternal(req);
@@ -606,36 +578,18 @@ window.addEventListener('message', function(e) {
   if (msg.type === 'online') {
     isOnline();
   }
+
+  if (msg.type === 'close') {
+    // close without asking
+    win.hide();
+    win.close(true);
+  }
 }, false);
-
-
-/**
- * Confirm before closing the app
- */
-var dialogClose = function() {
-  var confirm = $('#dialog-close-app').dialog({
-    resizable: false,
-    modal: true,
-    width: 550,
-    buttons: {
-      'Quit': function() {
-        $(this).dialog('close');
-        win.hide();
-        win.close(true);
-      },
-      Cancel: function() {
-        $(this).dialog('close');
-        return;
-      }
-    }
-  });
-  confirm.dialog('open');
-};
 
 
 // use the close event to catch every type of closing
 win.on('close', function() {
-  dialogClose();
+  sendMessage('ask-to-close');
 });
 
 

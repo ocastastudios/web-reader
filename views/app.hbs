@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electricomics Web Reader</title>
-  <link rel="stylesheet" href="js/lib/jquery-ui/jquery-ui.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/js/lib/jquery-ui/jquery-ui.min.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
 <div class="wrapper">
   <header class="main-header">
-    <object type="image/svg+xml" data="images/title.svg" class="main-logo">
+    <object type="image/svg+xml" data="/images/title.svg" class="main-logo">
       <h1 class="main-title">Electricomics</h1>
     </object>
     {{#if internal}}
@@ -101,6 +101,10 @@
   <div class="dialog" id="dialog-error" title="Error">
     <p>Error</p>
   </div>
+
+  <div class="dialog" id="dialog-close-app" title="Quit the app?">
+    <p>Are you sure you want to quit the app?</p>
+  </div>
 </div>
 
 <script>
@@ -113,13 +117,13 @@ reader.added = {{{json added}}};
 reader.helpers = {{{json hbsHelpers}}};
 </script>
 
-<script src="js/lib/jquery.min.js"></script>
-<script src="js/lib/jquery-ui/jquery-ui.js"></script>
-<script src="js/lib/handlebars.js"></script>
-<script src="js/lib/director.js"></script>
-<script src="js/features.js"></script>
-<script src="js/main.js"></script>
-<script src="js/app.js"></script>
-<script src="js/add.js"></script>
+<script src="/vendor/jquery/jquery.min.js"></script>
+<script src="/vendor/director/director.min.js"></script>
+<script src="/vendor/handlebars/handlebars.min.js"></script>
+<script src="/js/lib/jquery-ui/jquery-ui.js"></script>
+<script src="/js/features.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/add.js"></script>
 </body>
 </html>

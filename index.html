@@ -4,20 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electricomics Web Reader</title>
-  <link rel="stylesheet" href="public/js/lib/jquery-ui/jquery-ui.min.css">
-  <link rel="stylesheet" href="public/css/app.css">
+  <style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.splash-screen {
+  background: #000 url(public/images/splash.svg) no-repeat scroll center center;
+  background-size: 50%;
+}
+.iframe-wrapper {
+  height: 100%;
+  position: relative;
+}
+.iframe {
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  transition: opacity 1s;
+}
+  </style>
 </head>
 <body class="splash-screen">
-  <main class="iframe-wrapper">
-    <iframe id="main-iframe" class="iframe" src="public/empty.html" frameborder="0" nwdisable nwUserAgent="elcx-web-reader"></iframe>
-  </main>
-
-  <div class="dialog" id="dialog-close-app" title="Quit the app?">
-    <p>Are you sure you want to quit the app?</p>
+  <div class="iframe-wrapper">
+    <iframe id="main-iframe" class="iframe" src="" frameborder="0" nwdisable nwUserAgent="elcx-web-reader"></iframe>
   </div>
-  
-  <script src="public/js/lib/jquery.min.js"></script>
-  <script src="public/js/lib/jquery-ui/jquery-ui.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

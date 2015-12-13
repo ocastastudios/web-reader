@@ -57,7 +57,6 @@ try {
 
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/index">HOME</a></ec-webreader-nav>';
-var downloadStream;
 var store;
 
 var sendMessage = new Communication(ui.iframe, serverUrl);
@@ -212,7 +211,7 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'interrupt') {
-    downloadStream.emit('interrupt');
+    comic.downloadStream.emit('interrupt');
   }
 
   if (msg.type === 'online') {

@@ -200,6 +200,13 @@ $('#add-archive-file').on('change', function() {
 });
 
 
+// Delete comic
+$document.on('click', '.js-delete-comic', function() {
+  var id = $(this).data('id');
+  dialogDelete(id);
+});
+
+
 var addItem = function(msg) {
   var id = msg.id;
   reader.library[id] = msg.data;
@@ -227,6 +234,45 @@ var giulia = function() {
   };
   App.router.setRoute('/add-item/' + msg.id);
   // App.renderLibraryItem(msg.id, 'add');
+};
+
+var dialogDelete = function(id) {
+  var confirm = $('#dialog-delete-comic').dialog({
+    resizable: false,
+    modal: true,
+    width: 550,
+    buttons: {
+      'Yes delete': function() {
+        $(this).dialog('close');
+        removeItem(id);
+      },
+      'No don\'t': function() {
+        $(this).dialog('close');
+        return;
+      }
+    }
+  });
+  confirm.dialog('open');
+};
+
+var removeItem = function(id) {
+  sendMessage('remove-entry', { id: id });
+};
+
+var removedItem = function(id) {
+  if (reader.library[id]) {
+    delete reader.library[id];
+  }
+  var index = reader.libraryList.indexOf(id);
+  if (index !== -1) {
+    reader.libraryList.splice(index);
+  }
+
+  if (reader.store.libraryList.indexOf(id) !== -1) {
+    App.renderStoreList();
+  }
+  App.renderLibraryList();
+  App.router.setRoute('/' + App.section);
 };
 
 
@@ -264,5 +310,9 @@ receiveMessage = function(msg) {
 
   if (msg.type === 'add-item') {
     addItem(msg);
+  }
+
+  if (msg.type === 'deleted') {
+    removedItem(msg.id);
   }
 };

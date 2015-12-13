@@ -83,6 +83,10 @@ var remoteStart = function(url) {
   }
 };
 
+var remoteStop = function() {
+  sendMessage('interrupt');
+};
+
 var remoteStarted = function(val) {
   totalDownload = val;
   if (whichRemote === 'add') {
@@ -159,6 +163,10 @@ $addRemoteForm.on('submit', function(e) {
   }
 });
 
+$addRemoteStop.on('click', function() {
+  remoteStop();
+});
+
 
 // Remote URL from store
 $document.on('click', '#add-store-button', function() {
@@ -171,6 +179,10 @@ $document.on('click', '#add-store-button', function() {
     remoteStart(url);
     importStart();
   }
+});
+
+$document.on('click', '#add-store-stop', function() {
+  remoteStop();
 });
 
 

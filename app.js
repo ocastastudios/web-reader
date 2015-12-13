@@ -64,7 +64,6 @@ var projects = {};
 var projectsList = [];
 var projectExt = options.ext;
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/index">HOME</a></ec-webreader-nav>';
-var promisesLoadComics = [];
 var downloadStream;
 var downloadStreamInterrupted = false;
 var store;
@@ -147,6 +146,7 @@ var serverStart = function() {
  */
 var loadExtComics = function() {
   var comicsPath = LIB_DIR;
+  var promisesLoadComics = [];
 
   if (!tools.exists(comicsPath)) {
     return false;
@@ -160,6 +160,7 @@ var loadExtComics = function() {
     fsPath = path.join(comicsPath, comicsDir[i]);
     promisesLoadComics.push(readComicFolder(fsPath));
   }
+  return promisesLoadComics;
 };
 
 
@@ -590,8 +591,8 @@ win.on('close', function() {
  */
 var init = function() {
   store = new Store(options.storeUrl);
-  loadExtComics();
-  return Q.all(promisesLoadComics)
+  var promisesArr = loadExtComics();
+  return Q.all(promisesArr)
     .then(function() {
       ui.load(serverUrl + '/index');
     });

@@ -117,13 +117,18 @@ reader.added = {{{json added}}};
 reader.helpers = {{{json hbsHelpers}}};
 </script>
 
-<script src="/vendor/jquery/jquery.min.js"></script>
 <script src="/vendor/director/director.min.js"></script>
 <script src="/vendor/handlebars/handlebars.min.js"></script>
+<script src="/js/lib/jquery.min.js"></script>
 <script src="/js/lib/jquery-ui/jquery-ui.js"></script>
 <script src="/js/features.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/app.js"></script>
 <script src="/js/add.js"></script>
+<script>
+$document.ready(function() {
+  sendMessage('start');
+});
+</script>
 </body>
 </html>

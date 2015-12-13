@@ -11,11 +11,11 @@ var osenv = require('osenv');
 var Q = require('q');
 var junk = require('junk');
 var _ = require('underscore');
-var $ = require('jquery');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
 var Communication = require('./lib/communication');
+var ui = require('./lib/ui');
 
 var DEBUG = true;
 
@@ -59,28 +59,17 @@ try {
   // console.log(err.message);
 }
 
-// prevent backspace key from navigating back
-// to fix as this jack would block all the back keys, even on input fields
-// $(document).on('keydown', function(e) {
-//   if (e.keyCode === 8) {
-//     e.preventDefault();
-//     return false;
-//   }
-// });
-
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var projects = {};
 var projectsList = [];
 var projectExt = options.ext;
 var comicSnippet = '<ec-webreader-nav style="display:block;position:absolute;background:red;top:0;z-index:1;"><a href="/index">HOME</a></ec-webreader-nav>';
-var $mainFrame = $('#main-iframe');
-var iframeWin = $mainFrame.get(0).contentWindow;
 var promisesLoadComics = [];
 var downloadStream;
 var downloadStreamInterrupted = false;
 var store;
 
-var sendMessage = new Communication(iframeWin, serverUrl);
+var sendMessage = new Communication(ui.iframe, serverUrl);
 
 
 /**
@@ -101,7 +90,6 @@ var serverStart = function() {
 
     // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
-    app.use('/vendor/jquery', express.static(path.join(process.cwd(), 'node_modules', 'jquery', 'dist')));
     app.use('/vendor/director', express.static(path.join(process.cwd(), 'node_modules', 'director', 'build')));
     app.use('/vendor/handlebars', express.static(path.join(process.cwd(), 'node_modules', 'express-handlebars', 'node_modules', 'handlebars', 'dist')));
     
@@ -584,6 +572,10 @@ window.addEventListener('message', function(e) {
     win.hide();
     win.close(true);
   }
+
+  if (msg.type === 'start') {
+    ui.start();
+  }
 }, false);
 
 
@@ -597,15 +589,11 @@ win.on('close', function() {
  * Start and show
  */
 var init = function() {
-  $mainFrame.attr('src', serverUrl + '/loading.html');
   store = new Store(options.storeUrl);
   loadExtComics();
   return Q.all(promisesLoadComics)
     .then(function() {
-      $mainFrame.load(function() {
-        $mainFrame.css('opacity', '1');
-        sendMessage('start');
-      });
+      ui.load(serverUrl + '/index');
     });
 };
 

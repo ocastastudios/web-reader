@@ -1,6 +1,6 @@
 {
   "name": "electricomics-web-reader",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Electricomics Web Reader",
   "scripts": {
     "start": "nw"

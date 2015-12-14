@@ -1,6 +1,8 @@
-/* global $ */
+/* global $, reader */
 
 var $document = $(document);
+var $body = $('body');
+var $comicIframe = $('#comic-iframe');
 
 var sendMessage = function(type, obj) {
   var msg = {
@@ -61,20 +63,52 @@ $document.on('click', '.js-open-folder', function() {
   sendMessage('open-folder', { id: id });
 });
 
-window.addEventListener('message', function(e) {
-  if (e.origin !== 'file://') {
-    return false;
-  }
-  var msg;
-  try {
-    msg = JSON.parse(e.data);
-  }
-  catch (err) {
-    console.error(err);
-    return false;
-  }
+var openComic = function(url) {
+  $comicIframe.attr('src', url);
+  $body.addClass('show-comic');
+};
 
-  receiveMessage(msg);
+var closeComic = function() {
+  $body.removeClass('show-comic');
+  $comicIframe.attr('src', '');
+};
+
+$document.on('click', '.js-open-comic', function() {
+  var url = $(this).data('url');
+  openComic(url);
+});
+
+window.addEventListener('message', function(e) {
+  var msg;
+  // from the backend
+  if (e.origin === 'file://') {
+    try {
+      msg = JSON.parse(e.data);
+    }
+    catch (err) {
+      console.error(err);
+      return false;
+    }
+
+    receiveMessage(msg);
+  }
+  // from the comics
+  else if (e.origin === window.location.origin) {
+    try {
+      msg = JSON.parse(e.data);
+    }
+    catch (err) {
+      console.error(err);
+      return false;
+    }
+    if (msg.type === 'close-comic') {
+      closeComic();
+    }
+  }
+  // don't accept from anywhere else
+  else {
+    return false;
+  }
 });
 
 

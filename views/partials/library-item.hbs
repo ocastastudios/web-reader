@@ -47,7 +47,7 @@
   </div>
 </div>
 <div class="more__item__buttons more__item__buttons--library">
-  <a href="{{../serverPath}}" class="button">Start reading</a>
+  <input type="button" class="button js-open-comic" data-url="{{../serverPath}}" value="Start reading">
   {{#eq ../../section 'store'}}
   <a href="#/store/{{../../../id}}" class="button">Back to store</a>
   {{/eq}}

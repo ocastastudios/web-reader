@@ -1,0 +1,11 @@
+ec-webreader-nav {
+  background: transparent url(/images/home.svg) no-repeat;
+  background-size: 100%;
+  cursor: pointer;
+  display: block;
+  height: 40px;
+  position: absolute;
+  top: 0;
+  width: 40px;
+  z-index: 1;
+}

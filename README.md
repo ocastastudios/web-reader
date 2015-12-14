@@ -21,3 +21,4 @@ This is the beta version of the Electricomics Reader for desktop.
 * [ ] google analytics?
 * [ ] credits page for the builder?
 * [ ] better more automated builder
+* [ ] style for the dialog window

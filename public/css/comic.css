@@ -9,3 +9,6 @@ ec-webreader-nav {
   width: 40px;
   z-index: 1;
 }
+body {
+  background: #000;
+}

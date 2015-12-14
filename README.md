@@ -5,11 +5,11 @@ This is the beta version of the Electricomics Reader for desktop.
 
 ## Tasks for this week
 
-* [ ] show comics in iframe
-* [ ] check that dialog window stays over comic iframe
+* [x] show comics in iframe
+* [x] check that dialog window stays over comic iframe
 * [ ] fix tilt on Sway for non ios and non accelerometers
-* [ ] fix size in comics created with the generators
-* [ ] inject code into comics
+* [x] fix size in comics created with the generators
+* [x] inject code into comics
 * [ ] prepare archives for the 4 comics
 
 

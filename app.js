@@ -26,9 +26,11 @@ var options = {
 };
 
 var HOME_DIR = osenv.home();
-// var TMP_DIR = osenv.tmpdir();
-var TMP_DIR = path.join(HOME_DIR, 'Desktop');
+var TMP_DIR = osenv.tmpdir();
 var LIB_DIR = path.join(HOME_DIR, options.dir);
+if (DEBUG) {
+  TMP_DIR = path.join(HOME_DIR, 'Desktop');
+}
 
 // server stuff
 var server;

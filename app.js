@@ -91,7 +91,6 @@ var serverStart = function() {
     // assets
     app.use(express.static(path.join(process.cwd(), 'public')));
     app.use('/vendor/director', express.static(path.join(process.cwd(), 'node_modules', 'director', 'build')));
-    app.use('/vendor/handlebars', express.static(path.join(process.cwd(), 'node_modules', 'express-handlebars', 'node_modules', 'handlebars', 'dist')));
     
     // app
     app.use('/index', function(req, res) {

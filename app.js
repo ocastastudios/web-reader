@@ -250,6 +250,7 @@ var init = function() {
   var promisesArr = comic.loadExtComics();
   return Q.all(promisesArr)
     .then(function() {
+      comic.sortComics();
       ui.load(serverUrl + '/index');
     });
 };

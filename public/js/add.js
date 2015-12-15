@@ -37,6 +37,31 @@ var setStatus = function(status) {
 };
 
 /**
+ * Sort comics by key, it actually changed the array
+ * @param {string} key - Parameter to sort to - optional, if not given, title will be used
+ */
+var sortLibrary = function(key) {
+  key = key || 'title';
+  reader.libraryList.sort(function(a, b) {
+    return compare(reader.library[a], reader.library[b], key);
+  });
+};
+
+/**
+ * Compare array items by key - this is used by the native Array.sort()
+ * @param {string} key - Property to use for comparison
+ */
+var compare = function(a, b, key) {
+  if (a.data[key] < b.data[key]) {
+    return -1;
+  }
+  if (a.data[key] > b.data[key]) {
+    return 1;
+  }
+  return 0;
+};
+
+/**
  * @param {boolean} disabled - True to disable
  */
 var toggleForms = function(disable) {
@@ -211,6 +236,7 @@ var addItem = function(msg) {
   var id = msg.id;
   reader.library[id] = msg.data;
   reader.libraryList.push(id);
+  sortLibrary();
 
   if (reader.store.libraryList.indexOf(id) !== -1) {
     App.renderStoreList();
@@ -226,14 +252,6 @@ var addItem = function(msg) {
     // todo clean forms and progressbar and status
     // reader.added.unshift(id); // todo - disabled at the moment
   }
-};
-
-var giulia = function() {
-  var msg = {
-    id: 'afed27c144a0055de97bfc9a84d5464f5abb15b2'
-  };
-  App.router.setRoute('/add-item/' + msg.id);
-  // App.renderLibraryItem(msg.id, 'add');
 };
 
 var dialogDelete = function(id) {

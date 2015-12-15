@@ -78,6 +78,23 @@ $document.on('click', '.js-open-comic', function() {
   openComic(url);
 });
 
+// open link to external resource in the external browser
+var extLink1 = new RegExp(/^(f|ht)tps?:\/\//i);
+var extLink2 = new RegExp('^(f|ht)tps?:\/\/' + location.host, 'i');
+$document.on('click', 'a', function(e) {
+  var $this = $(this);
+  var href = $this.attr('href');
+  // if it starts with ftp/http/https
+  if (extLink1.test(href)) {
+    // if it's different than our host
+    if (!extLink2.test(href)) {
+      e.preventDefault();
+      sendMessage('open-link', { url: href });
+      return false;
+    }
+  }
+});
+
 window.addEventListener('message', function(e) {
   var msg;
   // from the backend

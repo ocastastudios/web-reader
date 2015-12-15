@@ -226,6 +226,10 @@ window.addEventListener('message', function(e) {
     win.close(true);
   }
 
+  if (msg.type === 'open-link') {
+    nwgui.Shell.openExternal(msg.url);
+  }
+
   if (msg.type === 'start') {
     ui.start();
   }

@@ -436,6 +436,12 @@ label {
   content: 'online';
 }
 
+#version {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
 /* Comic iframe */
 .comic-iframe {
   background: #000;

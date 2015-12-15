@@ -6,6 +6,7 @@ var http = require('http');
 var path = require('path');
 var osenv = require('osenv');
 var Q = require('q');
+var webreader = require('./package.json');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
@@ -101,6 +102,7 @@ var serverStart = function() {
         store: store.data,
         added: [],
         hbsHelpers: handlebars.helpersFE,
+        version: webreader.version,
         internal: true
       });
     });

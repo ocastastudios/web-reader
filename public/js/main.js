@@ -58,11 +58,6 @@ var dialogClose = function() {
   confirm.dialog('open');
 };
 
-$document.on('click', '.js-open-folder', function() {
-  var id = $(this).data('id');
-  sendMessage('open-folder', { id: id });
-});
-
 var openComic = function(url) {
   $comicIframe.attr('src', url);
   $body.addClass('show-comic');

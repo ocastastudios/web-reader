@@ -132,30 +132,6 @@ var serverStart = function() {
 
 
 /**
- * Open library comic in external browser
- * @param {string} id - comic id
- */
-var openExt = function(id) {
-  if (!comic.projects[id]) {
-    return false;
-  }
-  nwgui.Shell.openExternal(serverUrl + comic.projects[id].serverPath);
-};
-
-
-/**
- * Open comic folder in the system finder
- * @param {string} id - comic id
- */
-var openFolder = function(id) {
-  if (!comic.projects[id]) {
-    return false;
-  }
-  nwgui.Shell.showItemInFolder(path.join(comic.projects[id].fsPath, 'index.html'));
-};
-
-
-/**
  * Check if online
  * @returns {boolean} True if online
  */
@@ -199,14 +175,6 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'url') {
     comic.pAddComicUrl(msg.url);
-  }
-
-  if (msg.type === 'open-ext') {
-    openExt(msg.id);
-  }
-
-  if (msg.type === 'open-folder') {
-    openFolder(msg.id);
   }
 
   if (msg.type === 'remove-entry') {

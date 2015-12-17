@@ -1,5 +1,3 @@
-var nwgui = require('nw.gui');
-var win = nwgui.Window.get();
 var express = require('express');
 var app = express();
 var http = require('http');
@@ -13,6 +11,7 @@ var handlebars = require('./lib/handlebars');
 var Communication = require('./lib/communication');
 var ui = require('./lib/ui');
 var Comic = require('./lib/comic');
+var Chrome = require('./lib/chrome');
 
 var DEBUG = true;
 
@@ -38,26 +37,10 @@ var server;
 var sockets = {};
 var nextSocketId = 0;
 
-if (DEBUG) {
-  win.showDevTools();
-}
-else {
-  // win.maximize();
-}
-
-// clear cache
-nwgui.App.clearCache();
-
-// hack to make keyboard shortcuts work (at least under Mac OS)
-// https://github.com/nwjs/nw.js/issues/2462
-var nativeMenuBar = new nwgui.Menu({ type: 'menubar' });
-try {
-  nativeMenuBar.createMacBuiltin('Electricomics Web Reader');
-  win.menu = nativeMenuBar;
-} catch (err) {
-  // console.log(err.message);
-}
-
+var chrome = new Chrome({
+  title: 'Electricomics Reader',
+  debug: DEBUG
+});
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var comicSnippet = '<ec-webreader-nav title="Home"></ec-webreader-nav>';
 var store;
@@ -190,20 +173,13 @@ window.addEventListener('message', function(e) {
   }
 
   if (msg.type === 'open-link') {
-    nwgui.Shell.openExternal(msg.url);
+    chrome.openLink(msg.url);
   }
 
   if (msg.type === 'start') {
     ui.start();
   }
 }, false);
-
-
-// use the close event to catch every type of closing
-win.on('close', function() {
-  win.hide();
-  win.close(true);
-});
 
 
 /**

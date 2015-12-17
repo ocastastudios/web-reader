@@ -178,6 +178,7 @@ window.addEventListener('message', function(e) {
 
   if (msg.type === 'start') {
     ui.start();
+    chrome.contextmenuCreate(ui.iframe.document);
   }
 }, false);
 

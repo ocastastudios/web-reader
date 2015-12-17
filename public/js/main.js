@@ -19,9 +19,6 @@ var receiveMessage = function(msg) {
   if (msg.type === 'online') {
     $('#online').toggleClass('online', msg.status);
   }
-  if (msg.type === 'ask-to-close') {
-    dialogClose();
-  }
 };
 
 var dialogError = function(msg) {
@@ -36,25 +33,6 @@ var dialogError = function(msg) {
     }
   });
   confirm.html('<p>' + msg + '</p>');
-  confirm.dialog('open');
-};
-
-var dialogClose = function() {
-  var confirm = $('#dialog-close-app').dialog({
-    resizable: false,
-    modal: true,
-    width: 550,
-    buttons: {
-      'Quit': function() {
-        $(this).dialog('close');
-        sendMessage('close');
-      },
-      Cancel: function() {
-        $(this).dialog('close');
-        return;
-      }
-    }
-  });
   confirm.dialog('open');
 };
 

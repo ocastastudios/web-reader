@@ -189,12 +189,6 @@ window.addEventListener('message', function(e) {
     isOnline();
   }
 
-  if (msg.type === 'close') {
-    // close without asking
-    win.hide();
-    win.close(true);
-  }
-
   if (msg.type === 'open-link') {
     nwgui.Shell.openExternal(msg.url);
   }
@@ -207,7 +201,8 @@ window.addEventListener('message', function(e) {
 
 // use the close event to catch every type of closing
 win.on('close', function() {
-  sendMessage('ask-to-close');
+  win.hide();
+  win.close(true);
 });
 
 

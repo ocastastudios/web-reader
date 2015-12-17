@@ -111,6 +111,7 @@ label {
 .main-header {
   background: #000 url('../images/bg.png') 0 0 no-repeat;
   max-width: 1024px;
+  padding-bottom: 20px;
   position: fixed;
   top: 0;
   width: 100%;
@@ -480,6 +481,7 @@ html, body {
   height: 100%;
   margin-top: 0;
   overflow-y: auto;
+  -webkit-mask: -webkit-gradient(linear, left top, left bottom, color-stop(0.00, rgba(0,0,0,0)), color-stop(0.05, rgba(0,0,0,1)));
 }
 ::-webkit-scrollbar {
   margin-right: 10px;

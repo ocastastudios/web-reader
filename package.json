@@ -1,7 +1,7 @@
 {
-  "name": "electricomics-web-reader",
+  "name": "electricomics-desktop-reader",
   "version": "0.1.0",
-  "description": "Electricomics Web Reader",
+  "description": "Electricomics Desktop Reader",
   "scripts": {
     "start": "nw"
   },
@@ -35,7 +35,7 @@
     "width": 1024,
     "height": 768,
     "fullscreen": false,
-    "title": "Electricomics Web Reader",
+    "title": "Electricomics",
     "toolbar": false
   },
   "private": true

@@ -1,4 +1,4 @@
-# Electricomics Web Reader
+# Electricomics Desktop Reader
 
 This is the beta version of the Electricomics Reader for desktop.
 
@@ -10,7 +10,7 @@ This is the beta version of the Electricomics Reader for desktop.
 * [ ] fix tilt on Sway for non ios and non accelerometers
 * [x] fix size in comics created with the generators
 * [x] inject code into comics
-* [ ] prepare archives for the 4 comics
+* [x] prepare archives for the 4 comics
 
 
 ## General TODO

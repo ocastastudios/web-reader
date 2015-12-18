@@ -38,7 +38,7 @@ var sockets = {};
 var nextSocketId = 0;
 
 var chrome = new Chrome({
-  title: 'Electricomics Reader',
+  title: 'Electricomics',
   debug: DEBUG
 });
 var serverUrl = 'http://' + options.host + ':' + options.port;

@@ -19,7 +19,7 @@ var DEBUG = true;
 // they may end up in the advanced setting panel
 var options = {
   host: '127.0.0.1',
-  port: 8123,
+  port: 8124,
   dir: 'Electricomics Library',
   ext: '.elcx',
   storeUrl: 'http://localhost:8000'

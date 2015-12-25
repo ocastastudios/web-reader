@@ -9,7 +9,7 @@ var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
 var Communication = require('./lib/communication');
-var ui = require('./lib/ui');
+var Ui = require('./lib/ui');
 var Comic = require('./lib/comic');
 var Chrome = require('./lib/chrome');
 
@@ -37,6 +37,9 @@ var server;
 var sockets = {};
 var nextSocketId = 0;
 
+var ui = new Ui({
+  window: window
+});
 var chrome = new Chrome({
   title: 'Electricomics',
   debug: DEBUG

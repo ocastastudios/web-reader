@@ -1,10 +1,8 @@
-var express = require('express');
-var app = express();
-var http = require('http');
 var path = require('path');
 var osenv = require('osenv');
 var Q = require('q');
 var webreader = require('./package.json');
+var Server = require('./lib/server');
 var tools = require('./lib/tools');
 var Store = require('./lib/store');
 var handlebars = require('./lib/handlebars');
@@ -32,17 +30,16 @@ if (DEBUG) {
   TMP_DIR = path.join(HOME_DIR, 'Desktop');
 }
 
-// server stuff
-var server;
-var sockets = {};
-var nextSocketId = 0;
-
 var ui = new Ui({
   window: window
 });
 var chrome = new Chrome({
   title: 'Electricomics',
   debug: DEBUG
+});
+var app = new Server({
+  host: options.host,
+  port: options.port
 });
 var serverUrl = 'http://' + options.host + ':' + options.port;
 var comicSnippet = '<ec-webreader-nav title="Home"></ec-webreader-nav>';
@@ -58,63 +55,19 @@ var comic = new Comic({
   comicSnippet: comicSnippet
 });
 
-
-/**
- * Start the local server
- */
-var serverStart = function() {
-  //check if server is already running
-  http.get(options, function() {
-    console.log('server is already running');
-    init();
-  }).on('error', function() {
-    //server is not yet running
-
-    // handlebars
-    app.set('views', path.join(process.cwd(), 'views'));
-    app.engine(handlebars.ext, handlebars.hbs.engine);
-    app.set('view engine', handlebars.ext);
-
-    // assets
-    app.use(express.static(path.join(process.cwd(), 'public')));
-    app.use('/vendor/director', express.static(path.join(process.cwd(), 'node_modules', 'director', 'build')));
-    
-    // app
-    app.use('/index', function(req, res) {
-      var internal = tools.isInternal(req);
-      res.render('app', {
-        library: comic.projects,
-        libraryList: comic.projectsList,
-        store: store.data,
-        added: [],
-        hbsHelpers: handlebars.helpersFE,
-        version: webreader.version,
-        internal: true
-      });
-    });
-
-    // all environments
-    app.set('port', options.port);
-
-    server = http.createServer(app);
-    server.listen(options.port, function() {
-      init();
-    });
-
-    server.on('connection', function(socket) {
-      // Add a newly connected socket
-      var socketId = nextSocketId++;
-      sockets[socketId] = socket;
-      // console.log('socket', socketId, 'opened');
-
-      // Remove the socket when it closes
-      socket.on('close', function() {
-        // console.log('socket', socketId, 'closed');
-        delete sockets[socketId];
-      });
-    });
+// webpage of the app
+app.use('/index', function(req, res) {
+  var internal = tools.isInternal(req);
+  res.render('app', {
+    library: comic.projects,
+    libraryList: comic.projectsList,
+    store: store.data,
+    added: [],
+    hbsHelpers: handlebars.helpersFE,
+    version: webreader.version,
+    internal: true
   });
-};
+});
 
 
 /**
@@ -200,4 +153,4 @@ var init = function() {
 };
 
 
-serverStart();
+init();

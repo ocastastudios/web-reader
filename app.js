@@ -29,6 +29,9 @@ var LIB_DIR = path.join(HOME_DIR, options.dir);
 if (DEBUG) {
   TMP_DIR = path.join(HOME_DIR, 'Desktop');
 }
+var serverUrl = 'http://' + options.host + ':' + options.port;
+var comicSnippet = '<ec-webreader-nav title="Home"></ec-webreader-nav>';
+var store;
 
 var ui = new Ui({
   window: window
@@ -41,11 +44,12 @@ var app = new Server({
   host: options.host,
   port: options.port
 });
-var serverUrl = 'http://' + options.host + ':' + options.port;
-var comicSnippet = '<ec-webreader-nav title="Home"></ec-webreader-nav>';
-var store;
-
-var sendMessage = new Communication(ui.iframe, serverUrl);
+var communication = new Communication({
+  iframeWin: ui.iframe,
+  serverUrl: serverUrl,
+  window: window
+});
+var sendMessage = communication.sendMessage;
 var comic = new Comic({
   TMP_DIR: TMP_DIR,
   LIB_DIR: LIB_DIR,
@@ -93,21 +97,8 @@ window.addEventListener('online', function() {
 });
 
 
-// Listener for the postMessages from the iframes
-window.addEventListener('message', function(e) {
-  // check that that the messages come from our local server
-  if (e.origin !== serverUrl) {
-    return false;
-  }
-  
-  var msg;
-  try {
-    msg = JSON.parse(e.data);
-  } catch(err) {
-    console.log('error in the received post message');
-    return false;
-  }
-
+// Listener for the messages from the app
+var executeMessage = function(msg) {
   if (msg.type === 'local-archive') {
     comic.pAddComicElcx(msg.path);
   }
@@ -136,7 +127,8 @@ window.addEventListener('message', function(e) {
     ui.start();
     chrome.contextmenuCreate(ui.iframe.document);
   }
-}, false);
+};
+communication.receiveMessage(executeMessage);
 
 
 /**

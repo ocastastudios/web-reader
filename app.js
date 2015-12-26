@@ -1,6 +1,5 @@
 var path = require('path');
 var osenv = require('osenv');
-var Q = require('q');
 var webreader = require('./package.json');
 var Server = require('./lib/server');
 var tools = require('./lib/tools');
@@ -136,10 +135,8 @@ communication.receiveMessage(executeMessage);
  */
 var init = function() {
   store = new Store(options.storeUrl);
-  var promisesArr = comic.loadExtComics();
-  return Q.all(promisesArr)
+  return comic.loadComics()
     .then(function() {
-      comic.sortComics();
       ui.load(serverUrl + '/index');
     });
 };

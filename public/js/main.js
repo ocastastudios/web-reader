@@ -32,7 +32,7 @@ var dialogError = function(msg) {
       }
     }
   });
-  confirm.html('<p>' + msg + '</p>');
+  confirm.html('<p><pre>' + msg + '</pre></p>');
   confirm.dialog('open');
 };
 
